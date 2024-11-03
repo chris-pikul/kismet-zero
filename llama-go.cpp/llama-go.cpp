@@ -16,7 +16,7 @@ static void batch_add_seq(llama_batch &batch, const std::vector<int32_t> &tokens
     size_t n_tokens = tokens.size();
     for (size_t i = 0; i < n_tokens; i++)
     {
-        llama_batch_add(batch, tokens[i], i, {seq_id}, true);
+        common_batch_add(batch, tokens[i], i, {seq_id}, true);
     }
 }
 
@@ -70,7 +70,7 @@ static int batch_decode(llama_context *ctx, llama_batch &batch, float *output, i
         }
 
         float *out = output + embd_pos * n_embd;
-        llama_embd_normalize(embd, out, n_embd, embd_norm);
+        common_embd_normalize(embd, out, n_embd, embd_norm);
     }
     return 0;
 }
@@ -145,7 +145,7 @@ extern "C"
         const uint64_t n_batch = llama_n_batch(ctx);
 
         // Tokenize the prompt
-        auto inp = ::llama_tokenize(ctx, text, true, true);
+        auto inp = ::common_tokenize(ctx, text, true, true);
         *out_tokens = inp.size();
         if (inp.size() > n_batch)
         {
