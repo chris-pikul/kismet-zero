@@ -6,3 +6,4 @@
 mkdir -p build && cd build
 cmake -DBUILD_SHARED_LIBS=ON -DLLAMA_BUILD_COMMON=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc ..
 cmake --build . --config Release
+cp lib/libllama_go.dylib ../llama/libllama_go.dylib
