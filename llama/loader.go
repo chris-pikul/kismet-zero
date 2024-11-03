@@ -15,15 +15,37 @@ import (
 	"github.com/ebitengine/purego"
 )
 
+type NUMASetting uint8
+
+const (
+	GGML_NUMA_STRATEGY_DISABLED   NUMASetting = 0
+	GGML_NUMA_STRATEGY_DISTRIBUTE NUMASetting = 1
+	GGML_NUMA_STRATEGY_ISOLATE    NUMASetting = 2
+	GGML_NUMA_STRATEGY_NUMACTL    NUMASetting = 3
+	GGML_NUMA_STRATEGY_MIRROR     NUMASetting = 4
+	GGML_NUMA_STRATEGY_COUNT      NUMASetting = 5
+)
+
+type LogLevel uint8
+
+const (
+	GGML_LOG_LEVEL_NONE  LogLevel = 0
+	GGML_LOG_LEVEL_DEBUG LogLevel = 1
+	GGML_LOG_LEVEL_INFO  LogLevel = 2
+	GGML_LOG_LEVEL_WARN  LogLevel = 3
+	GGML_LOG_LEVEL_ERROR LogLevel = 4
+	GGML_LOG_LEVEL_CONT  LogLevel = 5
+)
+
 // libptr is a pointer to the loaded dynamic library.
 var libptr uintptr
-var load_library func(log_level int) uintptr
-var load_model func(path_model string, n_gpu_layers uint32) uintptr
-var load_context func(model uintptr, ctx_size uint32, embeddings bool) uintptr
+
+var init_library func(numa NUMASetting)
+var init_logging func(log_level LogLevel)
+var free_library func()
+var load_model func(path string, gpuLayers uint32) uintptr
 var free_model func(model uintptr)
-var free_context func(ctx uintptr)
-var embed_size func(model uintptr) int32
-var embed_text func(model uintptr, text string, out_embeddings []float32, out_tokens *uint32) int
+var complete func(model uintptr, prompt string, output *string) bool
 
 func init() {
 	libpath, err := findLlama()
@@ -35,16 +57,16 @@ func init() {
 	}
 
 	// Load the library functions
-	purego.RegisterLibFunc(&load_library, libptr, "load_library")
+	purego.RegisterLibFunc(&init_library, libptr, "init_library")
+	purego.RegisterLibFunc(&init_logging, libptr, "init_logging")
+	purego.RegisterLibFunc(&free_library, libptr, "free_library")
 	purego.RegisterLibFunc(&load_model, libptr, "load_model")
-	purego.RegisterLibFunc(&load_context, libptr, "load_context")
 	purego.RegisterLibFunc(&free_model, libptr, "free_model")
-	purego.RegisterLibFunc(&free_context, libptr, "free_context")
-	purego.RegisterLibFunc(&embed_size, libptr, "embed_size")
-	purego.RegisterLibFunc(&embed_text, libptr, "embed_text")
+	purego.RegisterLibFunc(&complete, libptr, "complete")
 
 	// Initialize the library (Log level WARN)
-	load_library(2)
+	init_library(GGML_NUMA_STRATEGY_DISTRIBUTE)
+	init_logging(GGML_LOG_LEVEL_INFO)
 }
 
 // --------------------------------- Library Lookup ---------------------------------

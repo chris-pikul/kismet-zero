@@ -1,178 +1,123 @@
-#include "arg.h"
-#include "common.h"
-#include "log.h"
-#include "llama.h"
-#include "ggml.h"
+// Copyright 2024 Chris Pikul. All rights reserved.
+//
+// Based on the kelindar/search project, but rewritten for inference instead of
+// embeddings.
+#include "llama-go.h"
+
 #include <vector>
-
-typedef struct llama_model *model_t;
-typedef struct llama_context *context_t;
-
-std::string embd_sep = "\n";
-int32_t embd_normalize = 2; // normalisation (-1=none, 0=max absolute int16, 1=taxicab, 2=euclidean, >2=p-norm)
-
-static void batch_add_seq(llama_batch &batch, const std::vector<int32_t> &tokens, llama_seq_id seq_id)
-{
-    size_t n_tokens = tokens.size();
-    for (size_t i = 0; i < n_tokens; i++)
-    {
-        common_batch_add(batch, tokens[i], i, {seq_id}, true);
-    }
-}
-
-static int batch_decode(llama_context *ctx, llama_batch &batch, float *output, int n_seq, int n_embd, int embd_norm)
-{
-    const enum llama_pooling_type pooling_type = llama_pooling_type(ctx);
-    const struct llama_model *model = llama_get_model(ctx);
-
-    // clear previous kv_cache values (irrelevant for embeddings)
-    llama_kv_cache_clear(ctx);
-
-    // run model
-    if (llama_model_has_encoder(model) && !llama_model_has_decoder(model))
-    {
-        if (llama_encode(ctx, batch) < 0)
-        { // encoder-only model
-            return -1;
-        }
-    }
-    else if (!llama_model_has_encoder(model) && llama_model_has_decoder(model))
-    {
-        if (llama_decode(ctx, batch) < 0)
-        { // decoder-only model
-            return -1;
-        }
-    }
-
-    for (int i = 0; i < batch.n_tokens; i++)
-    {
-        if (!batch.logits[i])
-        {
-            continue;
-        }
-
-        const float *embd = nullptr;
-        int embd_pos = 0;
-
-        if (pooling_type == LLAMA_POOLING_TYPE_NONE)
-        {
-            // try to get token embeddings
-            embd = llama_get_embeddings_ith(ctx, i);
-            embd_pos = i;
-            GGML_ASSERT(embd != NULL && "failed to get token embeddings");
-        }
-        else
-        {
-            // try to get sequence embeddings - supported only when pooling_type is not NONE
-            embd = llama_get_embeddings_seq(ctx, batch.seq_id[i][0]);
-            embd_pos = batch.seq_id[i][0];
-            GGML_ASSERT(embd != NULL && "failed to get sequence embeddings");
-        }
-
-        float *out = output + embd_pos * n_embd;
-        common_embd_normalize(embd, out, n_embd, embd_norm);
-    }
-    return 0;
-}
+#include "common.h"
 
 extern "C"
 {
-
-    // load the library and initialize the backend
-    LLAMA_API void load_library(ggml_log_level desired)
+    LLAMA_API void init_library(uint8_t numa)
     {
+        common_params params;
+        params.numa = (ggml_numa_strategy)numa;
+        common_init();
+
         llama_backend_init();
-        llama_numa_init(GGML_NUMA_STRATEGY_DISTRIBUTE);
-
-        // Set the log level
-        auto desired_ptr = new ggml_log_level;
-        *desired_ptr = desired;
-        llama_log_set([](ggml_log_level level, const char *text, void *user_data)
-                      {
-            if (level < *(ggml_log_level*)user_data) {
-                return; // noop
-            }
-            
-            fputs(text, stderr);
-            fflush(stderr); }, desired_ptr);
+        llama_numa_init(params.numa);
     }
 
-    // load the model from the file
-    LLAMA_API model_t load_model(const char *path_model, const uint32_t n_gpu_layers)
+    LLAMA_API void init_logging(ggml_log_level level)
     {
-        struct llama_model_params params = llama_model_default_params();
-        params.n_gpu_layers = n_gpu_layers;
+        auto level_p = new ggml_log_level;
+        *level_p = level;
 
-        return llama_load_model_from_file(path_model, params);
+        llama_log_set([](ggml_log_level lvl, const char *text, void *user_data)
+                      {
+            ggml_log_level inLevel = *(ggml_log_level*)user_data;
+            if (lvl < inLevel) return;
+
+            fputs(text, stderr);
+            fflush(stderr); }, level_p);
     }
 
-    // free the model and all the resources
-    LLAMA_API void free_model(model_t model)
+    LLAMA_API void free_library()
+    {
+        llama_backend_free();
+    }
+
+    LLAMA_API model_ptr load_model(const char *path, const uint32_t n_gpu_layers)
+    {
+        llama_model_params mparams = llama_model_default_params();
+        mparams.n_gpu_layers = n_gpu_layers;
+
+        return llama_load_model_from_file(path, mparams);
+    }
+
+    LLAMA_API void free_model(model_ptr model)
     {
         llama_free_model(model);
     }
 
-    // create a context with the model and the context size
-    LLAMA_API context_t load_context(model_t model, const uint32_t ctx_size, const bool embeddings)
+    LLAMA_API bool complete(model_ptr model, const char *prompt, const char *outGenerated)
     {
-        struct llama_context_params params = llama_context_default_params();
-        params.n_ctx = ctx_size;
-        params.embeddings = embeddings;
-        return llama_new_context_with_model(model, params);
-    }
-
-    // free the context and all the resources
-    LLAMA_API void free_context(context_t ctx)
-    {
-        llama_free(ctx);
-    }
-
-    // get the embeddings size, if the model doesn't support embeddings, return -1
-    LLAMA_API int32_t embed_size(model_t model)
-    {
-        if (llama_model_has_encoder(model) && llama_model_has_decoder(model))
-        {
-            return -1; // embeddings are not supported
-        }
-        return llama_n_embd(model);
-    }
-
-    // embed the text and return the embeddings.
-    LLAMA_API int embed_text(context_t ctx, const char *text, float *out_embeddings, uint32_t *out_tokens)
-    {
-        const enum llama_pooling_type pooling_type = llama_pooling_type(ctx);
-        model_t model = (model_t)llama_get_model(ctx);
-        const uint64_t n_batch = llama_n_batch(ctx);
+        int n_predict = 32;
 
         // Tokenize the prompt
-        auto inp = ::common_tokenize(ctx, text, true, true);
-        *out_tokens = inp.size();
-        if (inp.size() > n_batch)
+        const int n_prompt = -llama_tokenize(model, prompt, strlen(prompt), NULL, 0, true, true);
+
+        std::vector<llama_token> prompt_tokens(n_prompt);
+        if (llama_tokenize(model, prompt, strlen(prompt), prompt_tokens.data(), prompt_tokens.size(), true, true) < 0)
+            return false;
+
+        // Generate a context for it
+        llama_context_params cparams = llama_context_default_params();
+        cparams.n_ctx = n_prompt + n_predict - 1;
+        cparams.n_batch = n_prompt;
+        cparams.no_perf = true;
+
+        context_ptr ctx = llama_new_context_with_model(model, cparams);
+        if (ctx == NULL)
+            return false;
+
+        // Initialize the sampler
+        llama_sampler_chain_params sparams = llama_sampler_chain_default_params();
+        sparams.no_perf = true;
+
+        llama_sampler *smpl = llama_sampler_chain_init(sparams);
+
+        // Prepare batch for the prompt
+        llama_batch batch = llama_batch_get_one(prompt_tokens.data(), prompt_tokens.size());
+
+        // Start inference loop
+        std::string output;
+        llama_token ntoken;
+        char buf[128];
+        std::string sbuf;
+        int len;
+        for (int n_pos = 0; n_pos + batch.n_tokens < n_prompt + n_predict;)
         {
-            printf("Number of tokens exceeds batch size, increase batch size\n");
-            return 1; // Number of tokens exceeds batch size, increase batch size
+            if (llama_decode(ctx, batch))
+                return false;
+
+            n_pos += batch.n_tokens;
+
+            // Sample next token
+            {
+                ntoken = llama_sampler_sample(smpl, ctx, -1);
+                if (llama_token_is_eog(model, ntoken))
+                    break;
+
+                // Save the current token piece
+                len = llama_token_to_piece(model, ntoken, buf, sizeof(buf), 0, true);
+                if (len < 0)
+                    return false;
+                output.append(buf, len);
+
+                // Prepare next batch
+                batch = llama_batch_get_one(&ntoken, 1);
+            }
         }
 
-        // Check if the last token is SEP
-        if (inp.empty() || inp.back() != llama_token_sep(model))
-        {
-            return 2; // Last token is not SEP
-        }
+        // Free resources
+        llama_sampler_free(smpl);
+        llama_free(ctx);
 
-        // Initialize batch
-        struct llama_batch batch = llama_batch_init(n_batch, 0, 1);
-        batch_add_seq(batch, inp, 0);
+        // Fill output
+        outGenerated = output.c_str();
 
-        // Decode batch and write embeddings directly to out_embeddings
-        const int n_embd = llama_n_embd(model);
-        if (batch_decode(ctx, batch, out_embeddings, 1, n_embd, embd_normalize) != 0)
-        {
-            llama_batch_free(batch);
-            return 3; // Decoding failed
-        }
-
-        // Clean up
-        llama_batch_free(batch);
-        return 0;
+        return true;
     }
 }
