@@ -40,12 +40,35 @@ const (
 // libptr is a pointer to the loaded dynamic library.
 var libptr uintptr
 
+var did_error func() bool
+var get_last_error func() string
+var clear_error func()
+var get_last_output func() string
+var clear_output func()
+
+var set_predict func(n int32)
+var set_context_size func(n int32)
+var set_batch func(n int32)
+var set_ubatch func(n int32)
+var set_draft_size func(n int32)
+var set_parallel func(n int32)
+var set_gpu_layers func(n int32)
+
+var set_seed func(n int32)
+var set_min_keep func(n int32)
+var set_top_k func(n int32)
+var set_top_p func(n float32)
+var set_typical_p func(n float32)
+var set_min_p func(n float32)
+var set_temp func(n float32)
+
 var init_library func(numa NUMASetting)
 var init_logging func(log_level LogLevel)
 var free_library func()
-var load_model func(path string, gpuLayers uint32) uintptr
+var load_model func(path string) uintptr
 var free_model func(model uintptr)
-var complete func(model uintptr, prompt string, output *string) bool
+
+var infer_sync func(model uintptr, prompt string) bool
 
 func init() {
 	libpath, err := findLlama()
@@ -57,19 +80,40 @@ func init() {
 	}
 
 	// Load the library functions
+	purego.RegisterLibFunc(&did_error, libptr, "did_error")
+	purego.RegisterLibFunc(&get_last_error, libptr, "get_last_error")
+	purego.RegisterLibFunc(&clear_error, libptr, "clear_error")
+	purego.RegisterLibFunc(&get_last_output, libptr, "get_last_output")
+	purego.RegisterLibFunc(&clear_output, libptr, "clear_output")
+
+	purego.RegisterLibFunc(&set_predict, libptr, "set_predict")
+	purego.RegisterLibFunc(&set_context_size, libptr, "set_context_size")
+	purego.RegisterLibFunc(&set_batch, libptr, "set_batch")
+	purego.RegisterLibFunc(&set_ubatch, libptr, "set_ubatch")
+	purego.RegisterLibFunc(&set_draft_size, libptr, "set_draft_size")
+	purego.RegisterLibFunc(&set_parallel, libptr, "set_parallel")
+	purego.RegisterLibFunc(&set_gpu_layers, libptr, "set_gpu_layers")
+
+	purego.RegisterLibFunc(&set_seed, libptr, "set_seed")
+	purego.RegisterLibFunc(&set_min_keep, libptr, "set_min_keep")
+	purego.RegisterLibFunc(&set_top_k, libptr, "set_top_k")
+	purego.RegisterLibFunc(&set_top_p, libptr, "set_top_p")
+	purego.RegisterLibFunc(&set_typical_p, libptr, "set_typical_p")
+	purego.RegisterLibFunc(&set_min_p, libptr, "set_min_p")
+	purego.RegisterLibFunc(&set_temp, libptr, "set_temp")
+
 	purego.RegisterLibFunc(&init_library, libptr, "init_library")
 	purego.RegisterLibFunc(&init_logging, libptr, "init_logging")
 	purego.RegisterLibFunc(&free_library, libptr, "free_library")
 	purego.RegisterLibFunc(&load_model, libptr, "load_model")
 	purego.RegisterLibFunc(&free_model, libptr, "free_model")
-	purego.RegisterLibFunc(&complete, libptr, "complete")
+
+	purego.RegisterLibFunc(&infer_sync, libptr, "infer_sync")
 
 	// Initialize the library (Log level WARN)
 	init_library(GGML_NUMA_STRATEGY_DISTRIBUTE)
 	init_logging(GGML_LOG_LEVEL_INFO)
 }
-
-// --------------------------------- Library Lookup ---------------------------------
 
 // findLlama searches for the dynamic library in standard system paths.
 func findLlama() (string, error) {
@@ -97,6 +141,9 @@ func findLibrary(libName, goos string, dirs ...string) (string, error) {
 	// Include current working directory
 	if cwd, err := os.Getwd(); err == nil {
 		dirs = append(dirs, cwd)
+
+		// Add llama package folder
+		dirs = append(dirs, cwd+"/llama")
 	}
 
 	// Iterate through directories and search for the library
