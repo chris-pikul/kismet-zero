@@ -35,9 +35,8 @@ extern "C"
     LLAMA_API void init_logging(ggml_log_level level);
     LLAMA_API void free_library();
 
-    LLAMA_API model_ptr load_model(const char *path);
-    LLAMA_API void free_model(model_ptr model);
+    LLAMA_API bool load_model(const char *path);
+    LLAMA_API void free_model();
 
-    LLAMA_API bool infer_sync(model_ptr model, const char *prompt);
-    LLAMA_API const char *last_output();
+    LLAMA_API bool infer_sync(const char *prompt);
 }

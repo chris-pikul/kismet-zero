@@ -7,6 +7,8 @@
 #include <vector>
 #include <algorithm>
 
+static model_ptr g_model;
+
 static bool g_errored = false;
 static std::string g_error;
 static std::string g_output;
@@ -157,27 +159,40 @@ extern "C"
         llama_backend_free();
     }
 
-    LLAMA_API model_ptr load_model(const char *path)
+    LLAMA_API bool load_model(const char *path)
     {
+        if (g_model != NULL)
+        {
+            llama_free_model(g_model);
+            g_model = NULL;
+        }
+
         llama_model_params mparams = llama_model_default_params();
         mparams.n_gpu_layers = g_gpu_layers;
 
-        return llama_load_model_from_file(path, mparams);
+        g_model = llama_load_model_from_file(path, mparams);
+        return g_model != NULL;
     }
 
-    LLAMA_API void free_model(model_ptr model)
+    LLAMA_API void free_model()
     {
-        llama_free_model(model);
+        if (g_model == NULL)
+            return;
+        llama_free_model(g_model);
     }
 
-    LLAMA_API bool infer_sync(model_ptr model, const char *prompt)
+    LLAMA_API bool infer_sync(const char *prompt)
     {
         clear_error();
 
+        // Check if model is loaded
+        if (g_model == NULL)
+            return error("model not loaded");
+
         // Tokenize the prompt
-        const int n_prompt = -llama_tokenize(model, prompt, strlen(prompt), NULL, 0, true, true);
+        const int n_prompt = -llama_tokenize(g_model, prompt, strlen(prompt), NULL, 0, true, true);
         std::vector<llama_token> prompt_tokens(n_prompt);
-        if (llama_tokenize(model, prompt, strlen(prompt), prompt_tokens.data(), prompt_tokens.size(), true, true) < 0)
+        if (llama_tokenize(g_model, prompt, strlen(prompt), prompt_tokens.data(), prompt_tokens.size(), true, true) < 0)
             return error("failed to tokenize prompt");
 
         const int32_t n_predict = g_predict > 0 ? std::min(n_prompt + g_predict - 1, g_ctx) : g_ctx;
@@ -189,7 +204,7 @@ extern "C"
         cparams.n_ubatch = g_ubatch;
         cparams.no_perf = true;
 
-        context_ptr ctx = llama_new_context_with_model(model, cparams);
+        context_ptr ctx = llama_new_context_with_model(g_model, cparams);
         if (ctx == NULL)
             return error("failed to create new context");
         const int n_ctx = llama_n_ctx(ctx);
@@ -230,11 +245,11 @@ extern "C"
 
             // Sample next token
             next = llama_sampler_sample(smpl, ctx, -1);
-            if (llama_token_is_eog(model, next))
+            if (llama_token_is_eog(g_model, next))
                 break;
 
             // Save the current token piece
-            len = llama_token_to_piece(model, next, buf, sizeof(buf), 0, true);
+            len = llama_token_to_piece(g_model, next, buf, sizeof(buf), 0, true);
             if (len < 0)
                 return error("failed to convert token to piece");
             output.append(buf, len);

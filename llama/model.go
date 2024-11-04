@@ -1,58 +1,35 @@
 package llama
 
-import (
-	"errors"
-	"fmt"
-)
+import "errors"
 
-type Model struct {
-	handle uintptr
-	*Params
+var modelLoaded = false
+
+// IsModelLoaded returns true if the program believes the model is loaded. Because
+// the actual model memory happens over FFI anything can happen.
+func IsModelLoaded() bool {
+	return modelLoaded
 }
 
-func (m *Model) pushParams() {
-	if m.Params == nil {
-		m.Params = NewParams()
+// LoadModel initializes a model at the given path and loads it into memory. This
+// returns an error if the model fails to load. The [GPULayers] parameter must
+// be set prior to calling this. The model file must adhere to llama.cpp standards,
+// use GGLF/GGUF format.
+func LoadModel(path string) error {
+	if !inited {
+		return errors.New("library not initialized")
 	}
-	m.Params.Flush()
-}
 
-func (m Model) Valid() bool {
-	return m.handle != 0
-}
-
-func (m *Model) Load(path string) error {
-	m.pushParams()
-	m.handle = load_model(path)
-	if m.handle == 0 {
-		return fmt.Errorf("failed to load model at %s", path)
+	if !load_model(path) {
+		return LastError()
 	}
+	modelLoaded = true
+
 	return nil
 }
 
-func (m *Model) Free() {
-	if !m.Valid() {
-		return
-	}
-	free_model(m.handle)
-	m.handle = 0
-}
-
-func (m Model) InferSync(prompt string) (string, error) {
-	if !m.Valid() {
-		return "", errors.New("invalid model")
-	}
-
-	m.pushParams()
-
-	infer_sync(m.handle, prompt)
-
-	if did_error() {
-		errStr := get_last_error()
-		if errStr != "" {
-			return "", errors.New(errStr)
-		}
-		return "", errors.New("unknown inference error")
-	}
-	return get_last_output(), nil
+// FreeModel releases the model memory. There isn't really a reason to call this
+// if the model will exist for the life of the program.
+func FreeModel() {
+	free_model()
+	modelLoaded = false
 }

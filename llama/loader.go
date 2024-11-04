@@ -65,10 +65,10 @@ var set_temp func(n float32)
 var init_library func(numa NUMASetting)
 var init_logging func(log_level LogLevel)
 var free_library func()
-var load_model func(path string) uintptr
-var free_model func(model uintptr)
+var load_model func(path string) bool
+var free_model func()
 
-var infer_sync func(model uintptr, prompt string) bool
+var infer_sync func(prompt string) bool
 
 func init() {
 	libpath, err := findLlama()
@@ -109,10 +109,6 @@ func init() {
 	purego.RegisterLibFunc(&free_model, libptr, "free_model")
 
 	purego.RegisterLibFunc(&infer_sync, libptr, "infer_sync")
-
-	// Initialize the library (Log level WARN)
-	init_library(GGML_NUMA_STRATEGY_DISTRIBUTE)
-	init_logging(GGML_LOG_LEVEL_INFO)
 }
 
 // findLlama searches for the dynamic library in standard system paths.
