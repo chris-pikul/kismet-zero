@@ -12,6 +12,7 @@ static model_ptr g_model;
 static bool g_errored = false;
 static std::string g_error;
 static std::string g_output;
+static ggml_log_level g_loglevel = GGML_LOG_LEVEL_NONE;
 
 static int32_t g_predict = -1;
 static int32_t g_ctx = 4096;
@@ -34,6 +35,14 @@ bool error(const std::string &msg)
     g_error.assign(msg);
     g_errored = true;
     return false;
+}
+
+void log(ggml_log_level lvl, const char *text, void *user_data)
+{
+    if (g_loglevel <= 0 || lvl >= g_loglevel)
+        return;
+    fputs(text, stderr);
+    fflush(stderr);
 }
 
 extern "C"
@@ -62,6 +71,11 @@ extern "C"
     LLAMA_API void clear_output()
     {
         g_output.clear();
+    }
+
+    LLAMA_API void set_log_level(uint8_t n)
+    {
+        g_loglevel = (ggml_log_level)n;
     }
 
     LLAMA_API void set_predict(int32_t n)
@@ -136,22 +150,9 @@ extern "C"
 
     LLAMA_API void init_library(uint8_t numa)
     {
+        llama_log_set(log, NULL);
         llama_backend_init();
         llama_numa_init((ggml_numa_strategy)numa);
-    }
-
-    LLAMA_API void init_logging(ggml_log_level level)
-    {
-        auto level_p = new ggml_log_level;
-        *level_p = level;
-
-        llama_log_set([](ggml_log_level lvl, const char *text, void *user_data)
-                      {
-            ggml_log_level inLevel = *(ggml_log_level*)user_data;
-            if (lvl < inLevel) return;
-
-            fputs(text, stderr);
-            fflush(stderr); }, level_p);
     }
 
     LLAMA_API void free_library()
@@ -213,10 +214,10 @@ extern "C"
         llama_sampler_chain_params sparams = llama_sampler_chain_default_params();
         sparams.no_perf = true;
         llama_sampler *smpl = llama_sampler_chain_init(sparams);
-        llama_sampler_chain_add(smpl, llama_sampler_init_top_k(g_top_k));
-        llama_sampler_chain_add(smpl, llama_sampler_init_top_p(g_top_p, g_min_keep));
-        llama_sampler_chain_add(smpl, llama_sampler_init_typical(g_typ_p, g_min_keep));
-        llama_sampler_chain_add(smpl, llama_sampler_init_min_p(g_min_p, 1));
+        // llama_sampler_chain_add(smpl, llama_sampler_init_top_k(g_top_k));
+        // llama_sampler_chain_add(smpl, llama_sampler_init_top_p(g_top_p, g_min_keep));
+        // llama_sampler_chain_add(smpl, llama_sampler_init_typical(g_typ_p, g_min_keep));
+        // llama_sampler_chain_add(smpl, llama_sampler_init_min_p(g_min_p, 1));
         llama_sampler_chain_add(smpl, llama_sampler_init_temp(g_temp));
         llama_sampler_chain_add(smpl, llama_sampler_init_dist(g_seed));
 

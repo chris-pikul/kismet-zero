@@ -14,6 +14,7 @@ extern "C"
     LLAMA_API void clear_error();
     LLAMA_API const char *get_last_output();
     LLAMA_API void clear_output();
+    LLAMA_API void set_log_level(uint8_t n);
 
     LLAMA_API void set_predict(int32_t n);
     LLAMA_API void set_context_size(int32_t n);
@@ -32,7 +33,6 @@ extern "C"
     LLAMA_API void set_temp(float n);
 
     LLAMA_API void init_library(uint8_t numa);
-    LLAMA_API void init_logging(ggml_log_level level);
     LLAMA_API void free_library();
 
     LLAMA_API bool load_model(const char *path);

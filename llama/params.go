@@ -3,21 +3,33 @@ package llama
 import "math"
 
 var (
-	predictSize int32   = -1
-	contextSize int32   = 4096
-	batch       int32   = 2048
-	uBatch      int32   = 512
-	draft       int32   = 5
-	parallel    int32   = 1
-	gpuLayers   int32   = -1
-	seed        int32   = math.MaxInt32
-	minKeep     int32   = 0
-	topK        int32   = 40
-	topP        float32 = 0.95
-	typicalP    float32 = 1
-	minP        float32 = 0.05
-	temperature float32 = 0.80
+	logLevel    LogLevel = GGML_LOG_LEVEL_NONE
+	predictSize int32    = -1
+	contextSize int32    = 4096
+	batch       int32    = 2048
+	uBatch      int32    = 512
+	draft       int32    = 5
+	parallel    int32    = 1
+	gpuLayers   int32    = -1
+	seed        int32    = math.MaxInt32
+	minKeep     int32    = 0
+	topK        int32    = 40
+	topP        float32  = 0.95
+	typicalP    float32  = 1
+	minP        float32  = 0.05
+	temperature float32  = 0.80
 )
+
+func LoggingLevel() LogLevel {
+	return logLevel
+}
+
+// SetLogLevel initializes logging to the specified level. Log messages are
+// printed directly to STDERR.
+func SetLogLevel(l LogLevel) {
+	set_log_level(l)
+	logLevel = l
+}
 
 func PredictSize() int32 {
 	return predictSize

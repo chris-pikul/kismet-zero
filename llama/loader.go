@@ -41,6 +41,7 @@ var get_last_error func() string
 var clear_error func()
 var get_last_output func() string
 var clear_output func()
+var set_log_level func(n LogLevel)
 
 var set_predict func(n int32)
 var set_context_size func(n int32)
@@ -59,7 +60,6 @@ var set_min_p func(n float32)
 var set_temp func(n float32)
 
 var init_library func(numa NUMASetting)
-var init_logging func(log_level LogLevel)
 var free_library func()
 var load_model func(path string) bool
 var free_model func()
@@ -81,6 +81,7 @@ func init() {
 	purego.RegisterLibFunc(&clear_error, libptr, "clear_error")
 	purego.RegisterLibFunc(&get_last_output, libptr, "get_last_output")
 	purego.RegisterLibFunc(&clear_output, libptr, "clear_output")
+	purego.RegisterLibFunc(&set_log_level, libptr, "set_log_level")
 
 	purego.RegisterLibFunc(&set_predict, libptr, "set_predict")
 	purego.RegisterLibFunc(&set_context_size, libptr, "set_context_size")
@@ -99,7 +100,6 @@ func init() {
 	purego.RegisterLibFunc(&set_temp, libptr, "set_temp")
 
 	purego.RegisterLibFunc(&init_library, libptr, "init_library")
-	purego.RegisterLibFunc(&init_logging, libptr, "init_logging")
 	purego.RegisterLibFunc(&free_library, libptr, "free_library")
 	purego.RegisterLibFunc(&load_model, libptr, "load_model")
 	purego.RegisterLibFunc(&free_model, libptr, "free_model")
