@@ -20,7 +20,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Run the inferrance and return the output
+	// Run the inference and return the output
 	start := time.Now()
 	output, err := llama.InferSync("Write a short story about llamas.")
 	if err != nil {
