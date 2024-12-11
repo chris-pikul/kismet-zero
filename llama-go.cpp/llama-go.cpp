@@ -182,6 +182,13 @@ extern "C"
         llama_free_model(g_model);
     }
 
+    LLAMA_API bool infer(const char *prompt)
+    {
+        if (g_parallel > 1)
+            return infer_parallel(prompt);
+        return infer_sync(prompt);
+    }
+
     LLAMA_API bool infer_sync(const char *prompt)
     {
         clear_error();
@@ -267,5 +274,9 @@ extern "C"
         llama_free(ctx);
 
         return true;
+    }
+
+    LLAMA_API bool infer_parallel(const char *prompt)
+    {
     }
 }

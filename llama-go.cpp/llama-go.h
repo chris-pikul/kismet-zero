@@ -38,5 +38,7 @@ extern "C"
     LLAMA_API bool load_model(const char *path);
     LLAMA_API void free_model();
 
+    LLAMA_API bool infer(const char *prompt);
     LLAMA_API bool infer_sync(const char *prompt);
+    LLAMA_API bool infer_parallel(const char *prompt);
 }

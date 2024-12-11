@@ -7,10 +7,11 @@ import (
 	"time"
 )
 
-const modelPath = "/Users/chris/.ollama/models/blobs/sha256-00e1317cbf74d901080d7100f57580ba8dd8de57203072dc6f668324ba545f29"
+var modelPath = os.Getenv("KISMET_MODEL")
 
 func main() {
 	// Initialize the library
+	llama.SetLogLevel(llama.GGML_LOG_LEVEL_WARN)
 	llama.Initialize(llama.GGML_NUMA_STRATEGY_DISTRIBUTE)
 	llama.SetGPULayers(99)
 
