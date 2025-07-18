@@ -1,8 +1,0 @@
-# Changes from source
-
-The original code was copied from https://github.com/kelindar/search/tree/main/llama-go.cpp
-but has some changes to get it to work with the current version of llama.cpp
-
-- CMakeLists needed `${llama.cpp_SOURCE_DIR}/common` on line 6, there is no
-  include subdirectory anymore.
-- `llama-go.cpp` had all the `llama_` prefixed functions replaced with `common_`.
