@@ -1,7 +1,7 @@
 package lang
 
 var PhonemePoolCommon = PhonemePool{
-	Consonants: []Phoneme{
+	Consonants: PhonemeList{
 		// Plosives
 		{Symbol: "p", Type: PhonemeTypeConsonant, Consonant: &ConsonantSpec{Manner: ConsonantMannerPlosive}, Weight: 1.0},
 		{Symbol: "b", Type: PhonemeTypeConsonant, Consonant: &ConsonantSpec{Manner: ConsonantMannerPlosive}, Weight: 1.0},
@@ -27,7 +27,7 @@ var PhonemePoolCommon = PhonemePool{
 		{Symbol: "j", Type: PhonemeTypeConsonant, Consonant: &ConsonantSpec{Manner: ConsonantMannerSemivowel}, Weight: 1.0},
 		{Symbol: "w", Type: PhonemeTypeConsonant, Consonant: &ConsonantSpec{Manner: ConsonantMannerSemivowel}, Weight: 1.0},
 	},
-	Vowels: []Phoneme{
+	Vowels: PhonemeList{
 		{Symbol: "a", Type: PhonemeTypeVowel, Vowel: &VowelSpec{Height: VowelHeightLow, Backness: VowelBacknessFront, Rounded: false}, Weight: 1.0},
 		{Symbol: "e", Type: PhonemeTypeVowel, Vowel: &VowelSpec{Height: VowelHeightMid, Backness: VowelBacknessFront, Rounded: false}, Weight: 1.0},
 		{Symbol: "i", Type: PhonemeTypeVowel, Vowel: &VowelSpec{Height: VowelHeightHigh, Backness: VowelBacknessFront, Rounded: false}, Weight: 1.0},
