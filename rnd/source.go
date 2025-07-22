@@ -12,8 +12,16 @@ type SafeSource struct {
 	source rand.Source
 }
 
-func (s *SafeSource) Seed(seed uint64) {
-	// Non-op
+func (s *SafeSource) Lock() {
+	s.mu.Lock()
+}
+
+func (s *SafeSource) Unlock() {
+	s.mu.Unlock()
+}
+
+func (s *SafeSource) Unsafe() rand.Source {
+	return s.source
 }
 
 func (s *SafeSource) Uint64() uint64 {
