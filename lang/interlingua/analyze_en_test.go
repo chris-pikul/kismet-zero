@@ -209,13 +209,13 @@ func TestEnglishAnalyzerTAMDetection(t *testing.T) {
 		},
 		{
 			name:             "present negative",
-			tokens:           []string{"doesn't", "the", "boy", "the", "book"},
+			tokens:           []string{"doesn't", "give", "the", "boy", "the", "book"},
 			expectedTense:    "pres",
 			expectedPolarity: "neg",
 		},
 		{
 			name:             "past negative",
-			tokens:           []string{"didn't", "the", "boy", "the", "book"},
+			tokens:           []string{"didn't", "give", "the", "boy", "the", "book"},
 			expectedTense:    "past",
 			expectedPolarity: "neg",
 		},

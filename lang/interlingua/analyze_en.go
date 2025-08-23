@@ -88,7 +88,8 @@ func (a *EnglishAnalyzer) parseSimplePattern(tokens []string) (*parseResult, err
 	}
 
 	// Simple pattern matching for basic clause types
-	if len(tokens) < 3 {
+	// Allow 2-token intransitive sentences like "I walk"
+	if len(tokens) < 2 {
 		return nil, fmt.Errorf("insufficient tokens for analysis")
 	}
 
@@ -109,24 +110,41 @@ func (a *EnglishAnalyzer) parseSimplePattern(tokens []string) (*parseResult, err
 	}
 
 	// Find the actual verb by looking for a word that could be a verb
+	verbFound := false
 	for i := verbIndex; i < len(tokens); i++ {
 		if a.isVerb(tokens[i]) {
 			verbIndex = i
+			verbFound = true
 			break
 		}
 	}
 
-	if verbIndex >= len(tokens) {
+	if !verbFound {
 		return nil, fmt.Errorf("no verb found")
 	}
 
 	verb := tokens[verbIndex]
 	result.predicate = a.resolveVerb(verb)
 
+	// Add debug note
+	result.notes = append(result.notes, Note{
+		Severity: "info",
+		Code:     "verb.found",
+		Message:  fmt.Sprintf("Found verb '%s' at position %d", verb, verbIndex),
+	})
+
 	// Determine word order pattern
 	// Check if this is VSO (verb-subject-object) or SVO (subject-verb-object)
 	// For now, assume VSO if verb is at position 0 or 1, SVO otherwise
+	// But be more careful: if we have a pronoun or article at position 0, it's likely SVO
 	isVSO := verbIndex <= 1
+	if verbIndex == 1 && verbIndex > 0 {
+		// Check if position 0 looks like a subject (pronoun or article + noun)
+		if a.isNounPhrase(tokens, 0) {
+			isVSO = false // This is SVO: subject at 0, verb at 1
+		}
+	}
+
 	result.notes = append(result.notes, Note{
 		Severity: "info",
 		Code:     "word.order.detected",
@@ -150,7 +168,7 @@ func (a *EnglishAnalyzer) parseSimplePattern(tokens []string) (*parseResult, err
 	}
 
 	// Parse arguments based on position
-	a.parseArguments(tokens, verbIndex, result)
+	a.parseArguments(tokens, verbIndex, result, isVSO)
 
 	// Add diagnostic notes for assumptions
 	if result.tam.Tense == "" {
@@ -162,20 +180,50 @@ func (a *EnglishAnalyzer) parseSimplePattern(tokens []string) (*parseResult, err
 		})
 	}
 
+	// Ensure we found at least one entity (subject)
+	if len(result.entities) == 0 {
+		return nil, fmt.Errorf("no subject found - sentence must have a subject")
+	}
+
+	// Add debug note about entities found
+	result.notes = append(result.notes, Note{
+		Severity: "info",
+		Code:     "entities.found",
+		Message:  fmt.Sprintf("Found %d entities", len(result.entities)),
+	})
+
 	return result, nil
 }
 
 // parseArguments parses the arguments based on position and patterns.
-func (a *EnglishAnalyzer) parseArguments(tokens []string, verbIndex int, result *parseResult) {
-	// Simple heuristics: subject→agent, dobj→patient, PP "to"→recipient
+func (a *EnglishAnalyzer) parseArguments(tokens []string, verbIndex int, result *parseResult, isVSO bool) {
+	// Determine semantic roles based on verb type
+	verb := tokens[verbIndex]
+	verbConcept := a.resolveVerb(verb)
 
-	// Determine word order based on verb position
-	isVSO := verbIndex <= 1
+	// Check if this is a perception verb (experiencer + stimulus)
+	isPerceptionVerb := a.isPerceptionVerb(verbConcept)
+
+	// Check if this is a stative verb (experiencer + stimulus or possessor + possessed)
+	isStativeVerb := a.isStativeVerb(verbConcept)
+
+	// Add debug notes
+	result.notes = append(result.notes, Note{
+		Severity: "info",
+		Code:     "verb.type.detected",
+		Message:  fmt.Sprintf("Verb '%s' (concept: %s) - perception: %v, stative: %v", verb, verbConcept, isPerceptionVerb, isStativeVerb),
+	})
 
 	if isVSO {
 		// VSO order: verb-subject-object
 		// Subject is after verb
 		subjectIndex := a.findSubjectIndexVSO(tokens, verbIndex)
+		result.notes = append(result.notes, Note{
+			Severity: "info",
+			Code:     "subject.search.vso",
+			Message:  fmt.Sprintf("VSO: Looking for subject after verb at position %d, found at %d", verbIndex, subjectIndex),
+		})
+
 		if subjectIndex != -1 {
 			subject := a.parseNounPhrase(tokens, subjectIndex)
 			// Only set defaults if not already set
@@ -185,19 +233,77 @@ func (a *EnglishAnalyzer) parseArguments(tokens []string, verbIndex int, result 
 			if subject.Feats.Number == "" {
 				subject.Feats.Number = "sg" // Default to singular
 			}
-			result.entities[RoleAgent] = subject
+
+			// Assign semantic role based on verb type
+			if isPerceptionVerb {
+				result.entities[RoleExperiencer] = subject
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned subject to role %s", RoleExperiencer),
+				})
+			} else if isStativeVerb && verbConcept == "have-01" {
+				// For possession verbs, use agent (possessor) rather than experiencer
+				result.entities[RoleAgent] = subject
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned subject to role %s (possessor)", RoleAgent),
+				})
+			} else if isStativeVerb {
+				result.entities[RoleExperiencer] = subject
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned subject to role %s", RoleExperiencer),
+				})
+			} else {
+				result.entities[RoleAgent] = subject
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned subject to role %s", RoleAgent),
+				})
+			}
 
 			// Direct object is after subject
 			dobjIndex := a.findDirectObjectIndexVSO(tokens, verbIndex, subjectIndex)
 			if dobjIndex != -1 {
 				patient := a.parseNounPhrase(tokens, dobjIndex)
-				result.entities[RolePatient] = patient
+				if isPerceptionVerb {
+					result.entities[RoleStimulus] = patient
+					result.notes = append(result.notes, Note{
+						Severity: "info",
+						Code:     "role.assigned",
+						Message:  fmt.Sprintf("Assigned direct object to role %s", RoleStimulus),
+					})
+				} else if isStativeVerb && verbConcept == "have-01" {
+					result.entities[RolePatient] = patient // For possession, use patient
+					result.notes = append(result.notes, Note{
+						Severity: "info",
+						Code:     "role.assigned",
+						Message:  fmt.Sprintf("Assigned direct object to role %s", RolePatient),
+					})
+				} else {
+					result.entities[RolePatient] = patient
+					result.notes = append(result.notes, Note{
+						Severity: "info",
+						Code:     "role.assigned",
+						Message:  fmt.Sprintf("Assigned direct object to role %s", RolePatient),
+					})
+				}
 			}
 		}
 	} else {
 		// SVO order: subject-verb-object
 		// Subject is before verb
 		subjectIndex := a.findSubjectIndexSVO(tokens, verbIndex)
+		result.notes = append(result.notes, Note{
+			Severity: "info",
+			Code:     "subject.search.svo",
+			Message:  fmt.Sprintf("SVO: Looking for subject before verb at position %d, found at %d", verbIndex, subjectIndex),
+		})
+
 		if subjectIndex != -1 {
 			subject := a.parseNounPhrase(tokens, subjectIndex)
 			// Only set defaults if not already set
@@ -207,14 +313,66 @@ func (a *EnglishAnalyzer) parseArguments(tokens []string, verbIndex int, result 
 			if subject.Feats.Number == "" {
 				subject.Feats.Number = "sg" // Default to singular
 			}
-			result.entities[RoleAgent] = subject
+
+			// Assign semantic role based on verb type
+			if isPerceptionVerb {
+				result.entities[RoleExperiencer] = subject
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned subject to role %s", RoleExperiencer),
+				})
+			} else if isStativeVerb && verbConcept == "have-01" {
+				// For possession verbs, use agent (possessor) rather than experiencer
+				result.entities[RoleAgent] = subject
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned subject to role %s (possessor)", RoleAgent),
+				})
+			} else if isStativeVerb {
+				result.entities[RoleExperiencer] = subject
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned subject to role %s", RoleExperiencer),
+				})
+			} else {
+				result.entities[RoleAgent] = subject
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned subject to role %s", RoleAgent),
+				})
+			}
 		}
 
 		// Direct object is after verb
 		dobjIndex := a.findDirectObjectIndexSVO(tokens, verbIndex)
 		if dobjIndex != -1 {
 			patient := a.parseNounPhrase(tokens, dobjIndex)
-			result.entities[RolePatient] = patient
+			if isPerceptionVerb {
+				result.entities[RoleStimulus] = patient
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned direct object to role %s", RoleStimulus),
+				})
+			} else if isStativeVerb && verbConcept == "have-01" {
+				result.entities[RolePatient] = patient // For possession, use patient
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned direct object to role %s", RolePatient),
+				})
+			} else {
+				result.entities[RolePatient] = patient
+				result.notes = append(result.notes, Note{
+					Severity: "info",
+					Code:     "role.assigned",
+					Message:  fmt.Sprintf("Assigned direct object to role %s", RolePatient),
+				})
+			}
 		}
 	}
 
@@ -223,6 +381,11 @@ func (a *EnglishAnalyzer) parseArguments(tokens []string, verbIndex int, result 
 	if recipientIndex != -1 {
 		recipient := a.parseNounPhrase(tokens, recipientIndex)
 		result.entities[RoleRecipient] = recipient
+		result.notes = append(result.notes, Note{
+			Severity: "info",
+			Code:     "role.assigned",
+			Message:  fmt.Sprintf("Assigned indirect object to role %s", RoleRecipient),
+		})
 	}
 
 	// Find time adjuncts
@@ -253,8 +416,13 @@ func (a *EnglishAnalyzer) parseArguments(tokens []string, verbIndex int, result 
 // findSubjectIndexVSO finds the subject noun phrase index for VSO order.
 func (a *EnglishAnalyzer) findSubjectIndexVSO(tokens []string, verbIndex int) int {
 	// Subject is after verb in VSO order
+	// Look for the start of the noun phrase (which might include a determiner)
 	for i := verbIndex + 1; i < len(tokens); i++ {
 		if a.isNounPhrase(tokens, i) {
+			// If we found a determiner, this is the start of the noun phrase
+			if i > 0 && (tokens[i-1] == "the" || tokens[i-1] == "a" || tokens[i-1] == "an") {
+				return i - 1
+			}
 			return i
 		}
 	}
@@ -275,8 +443,13 @@ func (a *EnglishAnalyzer) findDirectObjectIndexVSO(tokens []string, verbIndex in
 // findSubjectIndexSVO finds the subject noun phrase index for SVO order.
 func (a *EnglishAnalyzer) findSubjectIndexSVO(tokens []string, verbIndex int) int {
 	// Subject is before verb in SVO order
+	// Look for the start of the noun phrase (which might include a determiner)
 	for i := verbIndex - 1; i >= 0; i-- {
 		if a.isNounPhrase(tokens, i) {
+			// If we found a determiner, this is the start of the noun phrase
+			if i > 0 && (tokens[i-1] == "the" || tokens[i-1] == "a" || tokens[i-1] == "an") {
+				return i - 1
+			}
 			return i
 		}
 	}
@@ -473,6 +646,19 @@ func (a *EnglishAnalyzer) parseLocationAdjunct(tokens []string, index int) Entit
 
 // isVerb checks if a token could be a verb.
 func (a *EnglishAnalyzer) isVerb(token string) bool {
+	// First check if this is definitely a noun or pronoun - if so, it's not a verb
+	if a.isNounPhrase([]string{token}, 0) {
+		return false
+	}
+
+	// Explicitly reject articles and common non-verbs
+	excluded := []string{"the", "a", "an", "this", "that", "these", "those", "his", "her", "its", "our", "your", "their", "my", "your", "his", "her", "its", "our", "their"}
+	for _, exclude := range excluded {
+		if token == exclude {
+			return false
+		}
+	}
+
 	// Check for common verbs
 	commonVerbs := []string{"give", "gives", "gave", "send", "sends", "sent", "move", "moves", "moved", "see", "sees", "saw", "walk", "walks", "walked", "run", "runs", "ran", "make", "makes", "made", "take", "takes", "took", "bring", "brings", "brought", "carry", "carries", "carried", "have", "has", "had"}
 	for _, verb := range commonVerbs {
@@ -483,13 +669,26 @@ func (a *EnglishAnalyzer) isVerb(token string) bool {
 
 	// Check for verb-like patterns, but be more restrictive
 	if strings.HasSuffix(token, "s") || strings.HasSuffix(token, "ed") {
-		// Exclude articles and common non-verbs
-		excluded := []string{"the", "this", "that", "these", "those", "his", "her", "its", "our", "your", "their"}
-		for _, exclude := range excluded {
-			if token == exclude {
+		// Additional check: if it ends in 's' and could be a plural noun, be more careful
+		if strings.HasSuffix(token, "s") {
+			// Check if removing 's' gives us a known noun
+			singular := strings.TrimSuffix(token, "s")
+			knownNouns := []string{"boy", "girl", "man", "woman", "book", "house", "car", "tree", "child", "person"}
+			for _, noun := range knownNouns {
+				if singular == noun {
+					return false // This is likely a plural noun, not a verb
+				}
+			}
+		}
+
+		// Only accept if it's not a known noun
+		knownNouns := []string{"boy", "girl", "man", "woman", "book", "house", "car", "tree", "child", "children", "person", "people", "money", "water", "food", "time", "day", "night", "year"}
+		for _, noun := range knownNouns {
+			if token == noun {
 				return false
 			}
 		}
+
 		return true
 	}
 
@@ -498,9 +697,31 @@ func (a *EnglishAnalyzer) isVerb(token string) bool {
 
 // isPreposition checks if a token is a preposition.
 func (a *EnglishAnalyzer) isPreposition(token string) bool {
-	prepositions := []string{"in", "on", "at", "by", "near", "under", "over", "to", "from", "with"}
+	prepositions := []string{"to", "from", "in", "on", "at", "by", "with", "without", "for", "against", "between", "among", "through", "during", "before", "after", "since", "until", "within", "beyond", "above", "below", "under", "over", "inside", "outside", "near", "far", "up", "down", "across", "along", "around", "behind", "in front of", "next to", "beside", "opposite", "toward", "away from", "out of", "into", "onto", "off", "out", "in", "up", "down"}
 	for _, prep := range prepositions {
 		if token == prep {
+			return true
+		}
+	}
+	return false
+}
+
+// isPerceptionVerb checks if a verb concept is a perception verb.
+func (a *EnglishAnalyzer) isPerceptionVerb(verbConcept ConceptID) bool {
+	perceptionVerbs := []ConceptID{"see-01", "hear-01", "smell-01", "taste-01", "feel-01", "perceive-01", "observe-01", "notice-01", "watch-01", "listen-01"}
+	for _, verb := range perceptionVerbs {
+		if verbConcept == verb {
+			return true
+		}
+	}
+	return false
+}
+
+// isStativeVerb checks if a verb concept is a stative verb.
+func (a *EnglishAnalyzer) isStativeVerb(verbConcept ConceptID) bool {
+	stativeVerbs := []ConceptID{"have-01", "be-01", "exist-01", "resemble-01", "contain-01", "belong-01", "own-01", "possess-01", "know-01", "believe-01", "think-01", "want-01", "need-01", "like-01", "hate-01", "love-01", "fear-01", "hope-01", "remember-01", "forget-01", "understand-01", "realize-01", "recognize-01", "seem-01", "appear-01", "look-01", "sound-01", "feel-01", "taste-01", "smell-01"}
+	for _, verb := range stativeVerbs {
+		if verbConcept == verb {
 			return true
 		}
 	}
