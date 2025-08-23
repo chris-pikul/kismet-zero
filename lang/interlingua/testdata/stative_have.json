@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "languageId": "test-conlang",
+  "entities": [
+    {
+      "id": "possessor1",
+      "concept": "boy",
+      "feats": {
+        "person": 3,
+        "number": "sg",
+        "definiteness": "def"
+      },
+      "discourse": {}
+    },
+    {
+      "id": "possessed1",
+      "concept": "money",
+      "feats": {
+        "number": "sg",
+        "definiteness": "def"
+      },
+      "discourse": {}
+    }
+  ],
+  "events": [
+    {
+      "id": "event1",
+      "predicate": "have-01",
+      "tam": {
+        "tense": "pres",
+        "polarity": "neg"
+      },
+      "roles": {
+        "agent": "possessor1",
+        "patient": "possessed1"
+      },
+      "valency": 2
+    }
+  ],
+  "trace": {
+    "sourceLanguageId": "test-conlang",
+    "constructionId": "trans.pres.neg"
+  }
+}

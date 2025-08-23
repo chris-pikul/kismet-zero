@@ -168,6 +168,9 @@ type Language struct {
 	// Configuration and generation parameters
 	Seed int64      `json:"seed"`
 	RNG  *rand.Rand `json:"-"`
+
+	// Optional interlingua services for semantic analysis and generation
+	interlinguaServices *InterlinguaServices `json:"-"`
 }
 
 // NewLanguage creates a new language with the specified configuration.
@@ -267,4 +270,17 @@ func (l *Language) Clone(newID LanguageID, newSeed int64) *Language {
 // String returns a string representation of the language.
 func (l *Language) String() string {
 	return fmt.Sprintf("Language(%s: %s)", l.ID.String(), l.Name)
+}
+
+// Interlingua returns the interlingua services for this language, initializing if needed.
+func (l *Language) Interlingua() *InterlinguaServices {
+	if l.interlinguaServices == nil {
+		l.interlinguaServices = NewInterlinguaServices()
+	}
+	return l.interlinguaServices
+}
+
+// SetInterlinguaServices sets the interlingua services for this language.
+func (l *Language) SetInterlinguaServices(services *InterlinguaServices) {
+	l.interlinguaServices = services
 }

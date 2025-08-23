@@ -460,7 +460,7 @@ func TestSentenceGenerator(t *testing.T) {
 	words := []morphology.Word{subject, verb}
 
 	// Generate a declarative sentence
-	sentence, err := generator.GenerateSentence(words, SentenceTypeDeclarative, rng)
+	sentence, err := generator.GenerateSentence(words, SentenceTypeDeclarative, rng, nil)
 	if err != nil {
 		t.Fatalf("Failed to generate sentence: %v", err)
 	}

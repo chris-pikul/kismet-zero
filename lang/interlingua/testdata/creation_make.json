@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "languageId": "test-conlang",
+  "entities": [
+    {
+      "id": "agent1",
+      "concept": "person",
+      "feats": {
+        "person": 3,
+        "number": "sg",
+        "definiteness": "indef"
+      },
+      "discourse": {}
+    },
+    {
+      "id": "patient1",
+      "concept": "house",
+      "feats": {
+        "number": "sg",
+        "definiteness": "indef"
+      },
+      "discourse": {}
+    }
+  ],
+  "events": [
+    {
+      "id": "event1",
+      "predicate": "make-01",
+      "tam": {
+        "tense": "pres",
+        "polarity": "pos"
+      },
+      "roles": {
+        "agent": "agent1",
+        "patient": "patient1"
+      },
+      "valency": 2
+    }
+  ],
+  "trace": {
+    "sourceLanguageId": "test-conlang",
+    "constructionId": "trans.pres.pos"
+  }
+}

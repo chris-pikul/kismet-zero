@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "languageId": "test-conlang",
+  "entities": [
+    {
+      "id": "agent1",
+      "concept": "man",
+      "feats": {
+        "person": 3,
+        "number": "sg",
+        "definiteness": "def"
+      },
+      "discourse": {}
+    }
+  ],
+  "events": [
+    {
+      "id": "event1",
+      "predicate": "walk-01",
+      "tam": {
+        "tense": "pres",
+        "polarity": "pos"
+      },
+      "roles": {
+        "agent": "agent1"
+      },
+      "valency": 1
+    }
+  ],
+  "trace": {
+    "sourceLanguageId": "test-conlang",
+    "constructionId": "intrans.pres.pos"
+  }
+}

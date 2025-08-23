@@ -63,6 +63,25 @@ func (mf MorphemeFrequency) String() string {
 	return morphemeFrequencyEnum[mf]
 }
 
+// FeatureKey represents a grammatical feature key for morphemes.
+type FeatureKey string
+
+// FeatureVal represents a grammatical feature value for morphemes.
+type FeatureVal string
+
+const (
+	FeatureTense      FeatureKey = "tense"
+	FeatureAspect     FeatureKey = "aspect"
+	FeatureMood       FeatureKey = "mood"
+	FeaturePolarity   FeatureKey = "polarity"
+	FeatureCase       FeatureKey = "case"
+	FeatureVoice      FeatureKey = "voice"
+	FeatureEvidential FeatureKey = "evidential"
+	FeaturePerson     FeatureKey = "person"
+	FeatureNumber     FeatureKey = "number"
+	FeatureGender     FeatureKey = "gender"
+)
+
 // Morpheme represents the smallest meaningful unit of language with its
 // phonological form, meaning, and morphological properties.
 type Morpheme struct {
@@ -74,6 +93,9 @@ type Morpheme struct {
 	Weight    float32           `json:"weight"`
 	Culture   string            `json:"culture,omitempty"`
 	Frequency MorphemeFrequency `json:"frequency"`
+
+	// NEW (optional, additive) - Feature annotations for interlingua emission
+	Features map[FeatureKey]FeatureVal `json:"features,omitempty"`
 }
 
 // MorphemeList is a collection of morphemes that supports both weighted and
@@ -181,6 +203,10 @@ func (wf WordFrequency) String() string {
 	return wordFrequencyEnum[wf]
 }
 
+// ConceptID represents a semantic concept identifier for interlingua integration.
+// This is a type alias that can be upgraded to interlingua.ConceptID later.
+type ConceptID string
+
 // Word represents a complete word formed from one or more morphemes with
 // its phonological form, meaning, and grammatical properties.
 type Word struct {
@@ -194,6 +220,9 @@ type Word struct {
 	Frequency WordFrequency     `json:"frequency"`
 	Weight    float32           `json:"weight"`
 	Agreement AgreementFeatures `json:"agreement,omitempty"`
+
+	// NEW (optional, additive) - Concept IDs for interlingua emission
+	ConceptIDs []ConceptID `json:"conceptIds,omitempty"`
 }
 
 // AgreementFeatures represents the grammatical features of a word for agreement.

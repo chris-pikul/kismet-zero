@@ -8,6 +8,23 @@ import (
 	"github.com/chris-pikul/kismet-zero/lang/morphology"
 )
 
+// Observer interface for tracking sentence generation metadata.
+type Observer interface {
+	OnTemplateChosen(id string)
+	OnToken(index int, source string) // "verb","subj","obj","iobj","adv-time"
+}
+
+// RealizationMeta contains metadata about sentence generation for interlingua integration.
+type RealizationMeta struct {
+	TemplateID    string         `json:"templateId"`
+	TokenToSource map[int]string `json:"tokenToSource"` // e.g., "verb","subj","obj","iobj","adv-time"
+}
+
+// Options contains optional configuration for sentence generation.
+type Options struct {
+	Observer Observer
+}
+
 // SentenceGenerator creates sentences using the grammar rules and morphological building blocks.
 type SentenceGenerator struct {
 	grammar *Grammar
@@ -25,6 +42,7 @@ func (sg *SentenceGenerator) GenerateSentence(
 	words []morphology.Word,
 	sentenceType SentenceType,
 	rng *rand.Rand,
+	opts *Options,
 ) (*Sentence, error) {
 	if len(words) < 2 {
 		return nil, fmt.Errorf("need at least 2 words to form a sentence")
@@ -39,6 +57,19 @@ func (sg *SentenceGenerator) GenerateSentence(
 	result, err := sg.applySyntaxRules(words, rng)
 	if err != nil {
 		return nil, fmt.Errorf("failed to apply syntax rules: %w", err)
+	}
+
+	// Notify observer about template selection and token sources
+	if opts != nil && opts.Observer != nil {
+		// Determine template ID based on word order and sentence type
+		templateID := sg.determineTemplateID(result, sentenceType)
+		opts.Observer.OnTemplateChosen(templateID)
+
+		// Map tokens to their sources
+		for i, word := range result {
+			source := sg.mapWordToSource(word, i, result)
+			opts.Observer.OnToken(i, source)
+		}
 	}
 
 	// Apply agreement rules
@@ -239,6 +270,67 @@ func (sg *SentenceGenerator) applySyntaxRules(words []morphology.Word, rng *rand
 	return result, nil
 }
 
+// determineTemplateID determines the template ID based on word order and sentence type.
+func (sg *SentenceGenerator) determineTemplateID(words []morphology.Word, sentenceType SentenceType) string {
+	// Determine word order pattern
+	var pattern []string
+	for _, word := range words {
+		switch word.Category {
+		case morphology.WordCategoryNoun, morphology.WordCategoryPronoun:
+			if len(pattern) == 0 {
+				pattern = append(pattern, "S") // Subject
+			} else {
+				pattern = append(pattern, "O") // Object
+			}
+		case morphology.WordCategoryVerb:
+			pattern = append(pattern, "V") // Verb
+		case morphology.WordCategoryAdjective:
+			pattern = append(pattern, "ADJ") // Adjective
+		case morphology.WordCategoryAdverb:
+			pattern = append(pattern, "ADV") // Adverb
+		case morphology.WordCategoryInterjection:
+			pattern = append(pattern, "Q") // Question/Interjection
+		default:
+			pattern = append(pattern, "X") // Unknown/Other
+		}
+	}
+
+	patternStr := strings.Join(pattern, "")
+	return fmt.Sprintf("%s.%s", sentenceType.String(), patternStr)
+}
+
+// mapWordToSource maps a word to its semantic source for interlingua integration.
+func (sg *SentenceGenerator) mapWordToSource(word morphology.Word, index int, allWords []morphology.Word) string {
+	switch word.Category {
+	case morphology.WordCategoryVerb:
+		return "verb"
+	case morphology.WordCategoryNoun, morphology.WordCategoryPronoun:
+		// First noun/pronoun is subject, second is object
+		nounCount := 0
+		for i := 0; i < index; i++ {
+			if allWords[i].Category == morphology.WordCategoryNoun ||
+				allWords[i].Category == morphology.WordCategoryPronoun {
+				nounCount++
+			}
+		}
+		if nounCount == 0 {
+			return "subj"
+		} else if nounCount == 1 {
+			return "obj"
+		} else {
+			return "iobj" // indirect object
+		}
+	case morphology.WordCategoryAdjective:
+		return "adj"
+	case morphology.WordCategoryAdverb:
+		return "adv"
+	case morphology.WordCategoryInterjection:
+		return "q"
+	default:
+		return "x"
+	}
+}
+
 // applyAgreementRules applies all agreement rules to the words.
 func (sg *SentenceGenerator) applyAgreementRules(words []morphology.Word, rng *rand.Rand) ([]morphology.Word, error) {
 	if sg.grammar.agreement == nil {
@@ -350,7 +442,7 @@ func (sg *SentenceGenerator) GenerateRandomSentence(
 		words = append(words, *objects[rng.IntN(len(objects))])
 	}
 
-	return sg.GenerateSentence(words, sentenceType, rng)
+	return sg.GenerateSentence(words, sentenceType, rng, nil)
 }
 
 // GenerateSimpleSentence creates a basic sentence with minimal complexity.
@@ -373,5 +465,5 @@ func (sg *SentenceGenerator) GenerateSimpleSentence(
 		words = append(words, *object)
 	}
 
-	return sg.GenerateSentence(words, sentenceType, rng)
+	return sg.GenerateSentence(words, sentenceType, rng, nil)
 }

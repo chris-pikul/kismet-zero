@@ -7,6 +7,10 @@ import (
 	"github.com/chris-pikul/kismet-zero/lang/morphology"
 )
 
+// Role represents a semantic role for interlingua integration.
+// This is a type alias that can be upgraded to interlingua.Role later.
+type Role string
+
 // SentenceTemplate defines a pattern for constructing sentences of a specific type.
 type SentenceTemplate struct {
 	Type        SentenceType `json:"type"`
@@ -15,6 +19,10 @@ type SentenceTemplate struct {
 	Optional    []string     `json:"optional"` // Optional elements
 	Weight      float32      `json:"weight"`
 	Description string       `json:"description"`
+
+	// NEW (optional, additive) - Stable ID and semantic role mapping
+	ID    string          `json:"id,omitempty"`    // e.g., "decl.transitive.svo.neg.pst"
+	Roles map[string]Role `json:"roles,omitempty"` // e.g., {"subject":"agent","object":"patient","iobj":"recipient"}
 }
 
 // NewSentenceTemplate creates a new sentence template.
@@ -30,34 +38,64 @@ func NewSentenceTemplate(sentenceType SentenceType, pattern []string, required [
 	}
 }
 
+// NewSentenceTemplateWithSemantics creates a new sentence template with semantic role mapping.
+func NewSentenceTemplateWithSemantics(sentenceType SentenceType, pattern []string, required []string,
+	optional []string, weight float32, description string, id string, roles map[string]Role) *SentenceTemplate {
+	return &SentenceTemplate{
+		Type:        sentenceType,
+		Pattern:     pattern,
+		Required:    required,
+		Optional:    optional,
+		Weight:      weight,
+		Description: description,
+		ID:          id,
+		Roles:       roles,
+	}
+}
+
 // Common sentence templates for different types
 var (
 	// Declarative templates
-	TemplateSVO = NewSentenceTemplate(
+	TemplateSVO = NewSentenceTemplateWithSemantics(
 		SentenceTypeDeclarative,
 		[]string{"S", "V", "O"},
 		[]string{"S", "V"},
 		[]string{"O", "ADV"},
 		10.0,
 		"Subject-Verb-Object declarative sentence",
+		"decl.transitive.svo",
+		map[string]Role{
+			"S": "agent",
+			"O": "patient",
+		},
 	)
 
-	TemplateSOV = NewSentenceTemplate(
+	TemplateSOV = NewSentenceTemplateWithSemantics(
 		SentenceTypeDeclarative,
 		[]string{"S", "O", "V"},
 		[]string{"S", "V"},
 		[]string{"O", "ADV"},
 		8.0,
 		"Subject-Object-Verb declarative sentence",
+		"decl.transitive.sov",
+		map[string]Role{
+			"S": "agent",
+			"O": "patient",
+		},
 	)
 
-	TemplateVSO = NewSentenceTemplate(
+	TemplateVSO = NewSentenceTemplateWithSemantics(
 		SentenceTypeDeclarative,
 		[]string{"V", "S", "O"},
 		[]string{"V", "S"},
 		[]string{"O", "ADV"},
 		6.0,
 		"Verb-Subject-Object declarative sentence",
+		"decl.transitive.vso",
+		map[string]Role{
+			"S": "agent",
+			"O": "patient",
+		},
 	)
 
 	// Interrogative templates

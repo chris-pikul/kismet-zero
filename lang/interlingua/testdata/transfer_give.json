@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0",
+  "languageId": "test-conlang",
+  "entities": [
+    {
+      "id": "agent1",
+      "concept": "woman",
+      "feats": {
+        "person": 3,
+        "number": "sg",
+        "definiteness": "def"
+      },
+      "discourse": {}
+    },
+    {
+      "id": "patient1",
+      "concept": "book",
+      "feats": {
+        "number": "sg",
+        "definiteness": "indef"
+      },
+      "discourse": {}
+    },
+    {
+      "id": "recipient1",
+      "concept": "child",
+      "feats": {
+        "person": 3,
+        "number": "sg",
+        "definiteness": "def"
+      },
+      "discourse": {}
+    }
+  ],
+  "events": [
+    {
+      "id": "event1",
+      "predicate": "give-01",
+      "tam": {
+        "tense": "past",
+        "polarity": "pos"
+      },
+      "roles": {
+        "agent": "agent1",
+        "patient": "patient1",
+        "recipient": "recipient1"
+      },
+      "valency": 3
+    }
+  ],
+  "trace": {
+    "sourceLanguageId": "test-conlang",
+    "constructionId": "ditrans.past.pos"
+  }
+}
