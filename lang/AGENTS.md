@@ -19,7 +19,7 @@ for diachronic change and cross-cultural blending.
 • Allow procedural but rule-driven randomness, so generated languages are
   plausible yet diverse.
 
-## Key Features (Planned/Implemented)
+## Key Features
 1. Phoneme System:
   • Global phoneme pool with IPA-derived categories and rarity weights.
   • Phonology type: curated, weighted subset for each language.
@@ -44,7 +44,7 @@ for diachronic change and cross-cultural blending.
   • Provides downstream generators (names, lore, text fragments).
   • Supports consistency across world history and cultural interactions.
 
-## Package Structure
+## Package Structure (Suggested)
 phoneme/
   • phoneme.go — Phoneme definitions, types, rarity weights
   • pool.go — Global pool and utilities
