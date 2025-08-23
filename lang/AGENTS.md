@@ -51,6 +51,11 @@ phoneme/
   • phonology.go — Phonology subset selection and weighting
   • choice.go — Random and weighted choice methods
 
+phonology/
+  • phonology.go — Core phonology types and syllable generation
+  • rules.go — Phonotactic rules and constraints
+  • syllable templates and validation systems
+
 orthography/
   • mapping.go — Grapheme-phoneme mapping
   • styles.go — Writing system styles (alphabetic, syllabic, logographic)
