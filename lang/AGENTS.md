@@ -43,6 +43,8 @@ for diachronic change and cross-cultural blending.
   • Languages are first-class entities tied to cultures.
   • Provides downstream generators (names, lore, text fragments).
   • Supports consistency across world history and cultural interactions.
+  • Root Language struct orchestrates all linguistic components.
+  • LanguageID system enables hierarchical language classification.
 
 ## Package Structure (Suggested)
 phoneme/
@@ -78,6 +80,7 @@ evolution/
   • familytree.go — Track genealogical relationships between languages
 
 root files
-  • lang.go — Core language types and orchestration
-  • culturelink.go — Linking languages to cultures
-  • generator.go — High-level API: new language, evolve, merge
+  • lang.go — Core Language struct, LanguageID (BCP-47 inspired), orchestration types
+  • package.go — Package documentation and overview
+  • culturelink.go — Linking languages to cultures (planned)
+  • generator.go — High-level API: new language, evolve, merge (planned)
