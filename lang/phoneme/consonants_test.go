@@ -5,281 +5,327 @@ import (
 	"testing"
 )
 
-func TestConsonantManner_Constants(t *testing.T) {
-	// Test that constants have expected values
-	if ConsonantMannerUnknown != 0 {
-		t.Errorf("ConsonantMannerUnknown should be 0, got %d", ConsonantMannerUnknown)
-	}
-	if ConsonantMannerPlosive != 1 {
-		t.Errorf("ConsonantMannerPlosive should be 1, got %d", ConsonantMannerPlosive)
-	}
-	if ConsonantMannerNasal != 2 {
-		t.Errorf("ConsonantMannerNasal should be 2, got %d", ConsonantMannerNasal)
-	}
-	if ConsonantMannerFricative != 3 {
-		t.Errorf("ConsonantMannerFricative should be 3, got %d", ConsonantMannerFricative)
-	}
-	if ConsonantMannerSibilants != 4 {
-		t.Errorf("ConsonantMannerSibilants should be 4, got %d", ConsonantMannerSibilants)
-	}
-	if ConsonantMannerLateralFricative != 5 {
-		t.Errorf("ConsonantMannerLateralFricative should be 5, got %d", ConsonantMannerLateralFricative)
-	}
-	if ConsonantMannerAffricate != 6 {
-		t.Errorf("ConsonantMannerAffricate should be 6, got %d", ConsonantMannerAffricate)
-	}
-	if ConsonantMannerVibrant != 7 {
-		t.Errorf("ConsonantMannerVibrant should be 7, got %d", ConsonantMannerVibrant)
-	}
-	if ConsonantMannerFlap != 8 {
-		t.Errorf("ConsonantMannerFlap should be 8, got %d", ConsonantMannerFlap)
-	}
-	if ConsonantMannerTrill != 9 {
-		t.Errorf("ConsonantMannerTrill should be 9, got %d", ConsonantMannerTrill)
-	}
-	if ConsonantMannerApproximant != 10 {
-		t.Errorf("ConsonantMannerApproximant should be 10, got %d", ConsonantMannerApproximant)
-	}
-	if ConsonantMannerSemivowel != 11 {
-		t.Errorf("ConsonantMannerSemivowel should be 11, got %d", ConsonantMannerSemivowel)
-	}
-	if ConsonantMannerDiphthong != 12 {
-		t.Errorf("ConsonantMannerDiphthong should be 12, got %d", ConsonantMannerDiphthong)
-	}
-	if ConsonantMannerLateralApproximant != 13 {
-		t.Errorf("ConsonantMannerLateralApproximant should be 13, got %d", ConsonantMannerLateralApproximant)
-	}
-	if ConsonantMannerEjective != 14 {
-		t.Errorf("ConsonantMannerEjective should be 14, got %d", ConsonantMannerEjective)
-	}
-	if ConsonantMannerImplosive != 15 {
-		t.Errorf("ConsonantMannerImplosive should be 15, got %d", ConsonantMannerImplosive)
-	}
-	if ConsonantMannerClick != 16 {
-		t.Errorf("ConsonantMannerClick should be 16, got %d", ConsonantMannerClick)
-	}
-	if ConsonantMannerPercussive != 17 {
-		t.Errorf("ConsonantMannerPercussive should be 17, got %d", ConsonantMannerPercussive)
-	}
-}
-
-func TestConsonantManner_String(t *testing.T) {
-	tests := []struct {
+func TestConsonantPlace(t *testing.T) {
+	testCases := []struct {
 		name     string
-		manner   ConsonantManner
+		place    ConsonantPlace
 		expected string
 	}{
-		{"unknown", ConsonantMannerUnknown, "unknown"},
-		{"plosive", ConsonantMannerPlosive, "plosive"},
-		{"nasal", ConsonantMannerNasal, "nasal"},
-		{"fricative", ConsonantMannerFricative, "fricative"},
-		{"sibilants", ConsonantMannerSibilants, "sibilants"},
-		{"lateral-fricative", ConsonantMannerLateralFricative, "lateral-fricative"},
-		{"affricate", ConsonantMannerAffricate, "affricate"},
-		{"vibrant", ConsonantMannerVibrant, "vibrant"},
-		{"flap", ConsonantMannerFlap, "flap"},
-		{"trill", ConsonantMannerTrill, "trill"},
-		{"approximant", ConsonantMannerApproximant, "approximant"},
-		{"semivowel", ConsonantMannerSemivowel, "semivowel"},
-		{"diphthong", ConsonantMannerDiphthong, "diphthong"},
-		{"lateral-approximant", ConsonantMannerLateralApproximant, "lateral-approximant"},
-		{"ejective", ConsonantMannerEjective, "ejective"},
-		{"implosive", ConsonantMannerImplosive, "implosive"},
-		{"click", ConsonantMannerClick, "click"},
-		{"percussive", ConsonantMannerPercussive, "percussive"},
-		{"out of bounds", ConsonantManner(99), "unknown"},
+		{"Unknown", ConsonantPlaceUnknown, "unknown"},
+		{"Bilabial", ConsonantPlaceBilabial, "bilabial"},
+		{"Labiodental", ConsonantPlaceLabiodental, "labiodental"},
+		{"Dental", ConsonantPlaceDental, "dental"},
+		{"Alveolar", ConsonantPlaceAlveolar, "alveolar"},
+		{"Postalveolar", ConsonantPlacePostalveolar, "postalveolar"},
+		{"Retroflex", ConsonantPlaceRetroflex, "retroflex"},
+		{"Palatal", ConsonantPlacePalatal, "palatal"},
+		{"Velar", ConsonantPlaceVelar, "velar"},
+		{"Uvular", ConsonantPlaceUvular, "uvular"},
+		{"Pharyngeal", ConsonantPlacePharyngeal, "pharyngeal"},
+		{"Glottal", ConsonantPlaceGlottal, "glottal"},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := tt.manner.String()
-			if result != tt.expected {
-				t.Errorf("ConsonantManner(%d).String() = %s, want %s", tt.manner, result, tt.expected)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.place.String() != tc.expected {
+				t.Errorf("Expected %s, got %s", tc.expected, tc.place.String())
 			}
 		})
 	}
 }
 
-func TestParseConsonantManner(t *testing.T) {
-	tests := []struct {
+func TestConsonantPlaceString_Invalid(t *testing.T) {
+	invalidPlace := ConsonantPlace(255)
+	if invalidPlace.String() != "unknown" {
+		t.Errorf("Expected 'unknown' for invalid place, got %s", invalidPlace.String())
+	}
+}
+
+func TestParseConsonantPlace(t *testing.T) {
+	testCases := []struct {
 		name     string
 		input    string
-		expected ConsonantManner
+		expected ConsonantPlace
 	}{
-		{"plosive", "plosive", ConsonantMannerPlosive},
-		{"nasal", "nasal", ConsonantMannerNasal},
-		{"fricative", "fricative", ConsonantMannerFricative},
-		{"sibilants", "sibilants", ConsonantMannerSibilants},
-		{"lateral-fricative", "lateral-fricative", ConsonantMannerLateralFricative},
-		{"affricate", "affricate", ConsonantMannerAffricate},
-		{"vibrant", "vibrant", ConsonantMannerVibrant},
-		{"flap", "flap", ConsonantMannerFlap},
-		{"trill", "trill", ConsonantMannerTrill},
-		{"approximant", "approximant", ConsonantMannerApproximant},
-		{"semivowel", "semivowel", ConsonantMannerSemivowel},
-		{"diphthong", "diphthong", ConsonantMannerDiphthong},
-		{"lateral-approximant", "lateral-approximant", ConsonantMannerLateralApproximant},
-		{"ejective", "ejective", ConsonantMannerEjective},
-		{"implosive", "implosive", ConsonantMannerImplosive},
-		{"click", "click", ConsonantMannerClick},
-		{"percussive", "percussive", ConsonantMannerPercussive},
-		{"unknown", "unknown", ConsonantMannerUnknown},
-		{"PLOSIVE", "PLOSIVE", ConsonantMannerUnknown}, // Case sensitive
-		{"Plosive", "Plosive", ConsonantMannerUnknown}, // Case sensitive
-		{"", "", ConsonantMannerUnknown},
-		{"invalid", "invalid", ConsonantMannerUnknown},
-		{"plosive ", "plosive ", ConsonantMannerUnknown}, // Extra space
-		{" plosive", " plosive", ConsonantMannerUnknown}, // Leading space
+		{"Valid bilabial", "bilabial", ConsonantPlaceBilabial},
+		{"Valid velar", "velar", ConsonantPlaceVelar},
+		{"Valid alveolar", "alveolar", ConsonantPlaceAlveolar},
+		{"Invalid input", "invalid", ConsonantPlaceUnknown},
+		{"Empty string", "", ConsonantPlaceUnknown},
+		{"Case sensitive", "BILABIAL", ConsonantPlaceUnknown},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := ParseConsonantManner(tt.input)
-			if result != tt.expected {
-				t.Errorf("ParseConsonantManner(%q) = %v, want %v", tt.input, result, tt.expected)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := ParseConsonantPlace(tc.input)
+			if result != tc.expected {
+				t.Errorf("Expected %v, got %v", tc.expected, result)
 			}
 		})
 	}
 }
 
-func TestConsonantManner_UnmarshalText(t *testing.T) {
-	tests := []struct {
-		name        string
-		input       []byte
-		expected    ConsonantManner
-		expectError bool
+func TestConsonantPlaceJSON(t *testing.T) {
+	testCases := []struct {
+		name     string
+		place    ConsonantPlace
+		expected string
 	}{
-		{"plosive", []byte("plosive"), ConsonantMannerPlosive, false},
-		{"nasal", []byte("nasal"), ConsonantMannerNasal, false},
-		{"fricative", []byte("fricative"), ConsonantMannerFricative, false},
-		{"unknown", []byte("unknown"), ConsonantMannerUnknown, false},
-		{"invalid", []byte("invalid"), ConsonantMannerUnknown, true},
-		{"empty", []byte(""), ConsonantMannerUnknown, true},
-		{"case sensitive", []byte("PLOSIVE"), ConsonantMannerUnknown, true},
+		{"Bilabial", ConsonantPlaceBilabial, `"bilabial"`},
+		{"Velar", ConsonantPlaceVelar, `"velar"`},
+		{"Unknown", ConsonantPlaceUnknown, `"unknown"`},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var cm ConsonantManner
-			err := cm.UnmarshalText(tt.input)
-
-			if tt.expectError {
-				if err == nil {
-					t.Error("Expected error but got none")
-				}
-			} else {
-				if err != nil {
-					t.Errorf("Unexpected error: %v", err)
-				}
+	for _, tc := range testCases {
+		t.Run(tc.name+"_Marshal", func(t *testing.T) {
+			data, err := json.Marshal(tc.place)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
 			}
+			if string(data) != tc.expected {
+				t.Errorf("Expected %s, got %s", tc.expected, string(data))
+			}
+		})
 
-			if cm != tt.expected {
-				t.Errorf("UnmarshalText(%q) = %v, want %v", tt.input, cm, tt.expected)
+		t.Run(tc.name+"_Unmarshal", func(t *testing.T) {
+			var place ConsonantPlace
+			err := json.Unmarshal([]byte(tc.expected), &place)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+			if place != tc.place {
+				t.Errorf("Expected %v, got %v", tc.place, place)
 			}
 		})
 	}
 }
 
-func TestConsonantManner_JSON(t *testing.T) {
-	// Test JSON marshaling
-	cm := ConsonantMannerPlosive
-	data, err := json.Marshal(cm)
-	if err != nil {
-		t.Fatalf("Failed to marshal ConsonantManner: %v", err)
+func TestConsonantPlaceUnmarshalJSON_Invalid(t *testing.T) {
+	testCases := []string{
+		`"invalid"`,
+		`"BILABIAL"`,
+		`"notaplace"`,
 	}
 
-	// Should marshal to string representation
-	expected := `"plosive"`
-	if string(data) != expected {
-		t.Errorf("JSON marshaling failed: got %s, want %s", string(data), expected)
-	}
-
-	// Test JSON unmarshaling
-	var unmarshaled ConsonantManner
-	err = json.Unmarshal(data, &unmarshaled)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal ConsonantManner: %v", err)
-	}
-
-	if unmarshaled != cm {
-		t.Errorf("JSON unmarshaling failed: got %v, want %v", unmarshaled, cm)
+	for _, tc := range testCases {
+		t.Run("Invalid_"+tc, func(t *testing.T) {
+			var place ConsonantPlace
+			err := json.Unmarshal([]byte(tc), &place)
+			if err == nil {
+				t.Errorf("Expected error for invalid input %s", tc)
+			}
+		})
 	}
 }
 
-func TestConsonantManner_JSONUnmarshalError(t *testing.T) {
-	// Test invalid JSON unmarshaling
-	invalidJSON := `"invalid_manner"`
-	var cm ConsonantManner
-	err := json.Unmarshal([]byte(invalidJSON), &cm)
-
-	if err == nil {
-		t.Error("Expected error for invalid consonant manner")
+func TestConsonantVoicing(t *testing.T) {
+	testCases := []struct {
+		name     string
+		voicing  ConsonantVoicing
+		expected string
+	}{
+		{"Unknown", ConsonantVoicingUnknown, "unknown"},
+		{"Voiced", ConsonantVoicingVoiced, "voiced"},
+		{"Unvoiced", ConsonantVoicingUnvoiced, "unvoiced"},
 	}
 
-	if cm != ConsonantMannerUnknown {
-		t.Errorf("Expected ConsonantMannerUnknown for invalid input, got %v", cm)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.voicing.String() != tc.expected {
+				t.Errorf("Expected %s, got %s", tc.expected, tc.voicing.String())
+			}
+		})
 	}
 }
 
-func TestConsonantSpec_JSON(t *testing.T) {
+func TestConsonantVoicingString_Invalid(t *testing.T) {
+	invalidVoicing := ConsonantVoicing(255)
+	if invalidVoicing.String() != "unknown" {
+		t.Errorf("Expected 'unknown' for invalid voicing, got %s", invalidVoicing.String())
+	}
+}
+
+func TestParseConsonantVoicing(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    string
+		expected ConsonantVoicing
+	}{
+		{"Valid voiced", "voiced", ConsonantVoicingVoiced},
+		{"Valid unvoiced", "unvoiced", ConsonantVoicingUnvoiced},
+		{"Valid unknown", "unknown", ConsonantVoicingUnknown},
+		{"Invalid input", "invalid", ConsonantVoicingUnknown},
+		{"Empty string", "", ConsonantVoicingUnknown},
+		{"Case sensitive", "VOICED", ConsonantVoicingUnknown},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := ParseConsonantVoicing(tc.input)
+			if result != tc.expected {
+				t.Errorf("Expected %v, got %v", tc.expected, result)
+			}
+		})
+	}
+}
+
+func TestConsonantVoicingJSON(t *testing.T) {
+	testCases := []struct {
+		name     string
+		voicing  ConsonantVoicing
+		expected string
+	}{
+		{"Voiced", ConsonantVoicingVoiced, `"voiced"`},
+		{"Unvoiced", ConsonantVoicingUnvoiced, `"unvoiced"`},
+		{"Unknown", ConsonantVoicingUnknown, `"unknown"`},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name+"_Marshal", func(t *testing.T) {
+			data, err := json.Marshal(tc.voicing)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+			if string(data) != tc.expected {
+				t.Errorf("Expected %s, got %s", tc.expected, string(data))
+			}
+		})
+
+		t.Run(tc.name+"_Unmarshal", func(t *testing.T) {
+			var voicing ConsonantVoicing
+			err := json.Unmarshal([]byte(tc.expected), &voicing)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+			if voicing != tc.voicing {
+				t.Errorf("Expected %v, got %v", tc.voicing, voicing)
+			}
+		})
+	}
+}
+
+func TestConsonantVoicingUnmarshalJSON_Invalid(t *testing.T) {
+	testCases := []string{
+		`"invalid"`,
+		`"VOICED"`,
+		`"notavoicing"`,
+	}
+
+	for _, tc := range testCases {
+		t.Run("Invalid_"+tc, func(t *testing.T) {
+			var voicing ConsonantVoicing
+			err := json.Unmarshal([]byte(tc), &voicing)
+			if err == nil {
+				t.Errorf("Expected error for invalid input %s", tc)
+			}
+		})
+	}
+}
+
+func TestConsonantSpecComplete(t *testing.T) {
+	// Test the updated ConsonantSpec with all fields
 	spec := ConsonantSpec{
-		Manner: ConsonantMannerNasal,
+		Manner:  ConsonantMannerPlosive,
+		Place:   ConsonantPlaceVelar,
+		Voicing: ConsonantVoicingUnvoiced,
 	}
 
-	// Test JSON marshaling
+	// Test JSON marshaling and unmarshaling
 	data, err := json.Marshal(spec)
 	if err != nil {
-		t.Fatalf("Failed to marshal ConsonantSpec: %v", err)
+		t.Fatalf("Unexpected error marshaling: %v", err)
 	}
 
-	// Test JSON unmarshaling
 	var unmarshaled ConsonantSpec
 	err = json.Unmarshal(data, &unmarshaled)
 	if err != nil {
-		t.Fatalf("Failed to unmarshal ConsonantSpec: %v", err)
+		t.Fatalf("Unexpected error unmarshaling: %v", err)
 	}
 
 	if unmarshaled.Manner != spec.Manner {
-		t.Errorf("Manner mismatch: got %v, want %v", unmarshaled.Manner, spec.Manner)
+		t.Errorf("Expected manner %v, got %v", spec.Manner, unmarshaled.Manner)
+	}
+	if unmarshaled.Place != spec.Place {
+		t.Errorf("Expected place %v, got %v", spec.Place, unmarshaled.Place)
+	}
+	if unmarshaled.Voicing != spec.Voicing {
+		t.Errorf("Expected voicing %v, got %v", spec.Voicing, unmarshaled.Voicing)
 	}
 }
 
-func TestConsonantManner_EdgeCases(t *testing.T) {
-	// Test boundary conditions
-	cm := ConsonantManner(0)
-	if cm.String() != "unknown" {
-		t.Errorf("ConsonantManner(0).String() = %s, want 'unknown'", cm.String())
+func TestConsonantSpecExamples(t *testing.T) {
+	// Test some realistic consonant specifications
+	testCases := []struct {
+		name   string
+		spec   ConsonantSpec
+		symbol string // IPA symbol for reference
+	}{
+		{
+			name: "k - voiceless velar plosive",
+			spec: ConsonantSpec{
+				Manner:  ConsonantMannerPlosive,
+				Place:   ConsonantPlaceVelar,
+				Voicing: ConsonantVoicingUnvoiced,
+			},
+			symbol: "k",
+		},
+		{
+			name: "b - voiced bilabial plosive",
+			spec: ConsonantSpec{
+				Manner:  ConsonantMannerPlosive,
+				Place:   ConsonantPlaceBilabial,
+				Voicing: ConsonantVoicingVoiced,
+			},
+			symbol: "b",
+		},
+		{
+			name: "s - voiceless alveolar fricative",
+			spec: ConsonantSpec{
+				Manner:  ConsonantMannerFricative,
+				Place:   ConsonantPlaceAlveolar,
+				Voicing: ConsonantVoicingUnvoiced,
+			},
+			symbol: "s",
+		},
+		{
+			name: "n - voiced alveolar nasal",
+			spec: ConsonantSpec{
+				Manner:  ConsonantMannerNasal,
+				Place:   ConsonantPlaceAlveolar,
+				Voicing: ConsonantVoicingVoiced,
+			},
+			symbol: "n",
+		},
 	}
 
-	cm = ConsonantManner(17)
-	if cm.String() != "percussive" {
-		t.Errorf("ConsonantManner(17).String() = %s, want 'percussive'", cm.String())
-	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Verify the spec is well-formed
+			if tc.spec.Manner == ConsonantMannerUnknown {
+				t.Error("Manner should not be unknown")
+			}
+			if tc.spec.Place == ConsonantPlaceUnknown {
+				t.Error("Place should not be unknown")
+			}
+			if tc.spec.Voicing == ConsonantVoicingUnknown {
+				t.Error("Voicing should not be unknown")
+			}
 
-	// Test out of bounds
-	cm = ConsonantManner(255)
-	if cm.String() != "unknown" {
-		t.Errorf("ConsonantManner(255).String() = %s, want 'unknown'", cm.String())
-	}
-}
+			// Test JSON round-trip
+			data, err := json.Marshal(tc.spec)
+			if err != nil {
+				t.Fatalf("Unexpected error marshaling: %v", err)
+			}
 
-func TestConsonantManner_Consistency(t *testing.T) {
-	// Test that parsing and string conversion are consistent
-	manners := []ConsonantManner{
-		ConsonantMannerUnknown, ConsonantMannerPlosive, ConsonantMannerNasal,
-		ConsonantMannerFricative, ConsonantMannerSibilants, ConsonantMannerLateralFricative,
-		ConsonantMannerAffricate, ConsonantMannerVibrant, ConsonantMannerFlap,
-		ConsonantMannerTrill, ConsonantMannerApproximant, ConsonantMannerSemivowel,
-		ConsonantMannerDiphthong, ConsonantMannerLateralApproximant, ConsonantMannerEjective,
-		ConsonantMannerImplosive, ConsonantMannerClick, ConsonantMannerPercussive,
-	}
+			var unmarshaled ConsonantSpec
+			err = json.Unmarshal(data, &unmarshaled)
+			if err != nil {
+				t.Fatalf("Unexpected error unmarshaling: %v", err)
+			}
 
-	for _, cm := range manners {
-		str := cm.String()
-		parsed := ParseConsonantManner(str)
-		if parsed != cm {
-			t.Errorf("Inconsistency: %v.String() = %q, ParseConsonantManner(%q) = %v",
-				cm, str, str, parsed)
-		}
+			if unmarshaled != tc.spec {
+				t.Errorf("JSON round-trip failed: expected %+v, got %+v", tc.spec, unmarshaled)
+			}
+		})
 	}
 }

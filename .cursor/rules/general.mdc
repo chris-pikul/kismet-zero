@@ -3,7 +3,7 @@ description: General development guidelines on code style, testing, and document
 globs:
 alwaysApply: true
 ---
- • Look for an `AGENTS.md` file for package level context.
+ • Look for an `AGENTS.md` file for package level context. Use grep to absorb all AGENTS.md files.
  • Use lowerCamelCase for struct fields and JSON tags. Do not use snake_case.
  • Constants must be in UPPER_CASE and may use underscores.
  • Avoid global state. Prefer dependency injection via constructor functions.
