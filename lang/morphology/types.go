@@ -193,6 +193,17 @@ type Word struct {
 	Culture   string            `json:"culture,omitempty"`
 	Frequency WordFrequency     `json:"frequency"`
 	Weight    float32           `json:"weight"`
+	Agreement AgreementFeatures `json:"agreement,omitempty"`
+}
+
+// AgreementFeatures represents the grammatical features of a word for agreement.
+type AgreementFeatures struct {
+	Case   string `json:"case,omitempty"`   // Grammatical case
+	Number string `json:"number,omitempty"` // Grammatical number
+	Gender string `json:"gender,omitempty"` // Grammatical gender
+	Tense  string `json:"tense,omitempty"`  // Grammatical tense
+	Aspect string `json:"aspect,omitempty"` // Grammatical aspect
+	Person string `json:"person,omitempty"` // Grammatical person
 }
 
 // WordList is a collection of words that supports both weighted and
