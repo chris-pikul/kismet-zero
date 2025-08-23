@@ -1,0 +1,42 @@
+---
+description: General development guidelines on code style, testing, and documentation.
+globs:
+alwaysApply: true
+---
+ • Look for an `AGENTS.md` file for package level context.
+ • Use lowerCamelCase for struct fields and JSON tags. Do not use snake_case.
+ • Constants must be in UPPER_CASE and may use underscores.
+ • Avoid global state. Prefer dependency injection via constructor functions.
+ • Prefer composition over inheritance. Use interfaces for abstractions, not for struct reuse.
+ • Always check errors returned by functions. Handle explicitly or propagate upward.
+ • Use `gofmt` and `golangci-lint`.
+ • Use explicit type declarations for map and slice initializations.
+ • Avoid naked returns. Return named values explicitly.
+ • Limit function size. Split functions into smaller units when they exceed 50 lines or contain deeply nested blocks.
+ • Avoid panic in business logic. Only use for programmer errors or unrecoverable internal states.
+ • Use context.Context consistently in all long-running or external-facing functions.
+ • Prefer immutable data patterns for concurrent data (channels, sync primitives).
+ • Use 4-space indentation. Do not use tabs.
+ • Use parentheses to clarify operator precedence in math or bitwise operations.
+ • Avoid single-letter variable names outside loop counters or math domains.
+ • Use meaningful, descriptive identifiers. Avoid obj, data, temp.
+ • Booleans should start with passive verbs (e.g., isActive, hasPermission).
+ • Arrays must be pluralized (users, not user[]).
+ • Naming conventions:
+   • lowerCamelCase → fields, parameters, JSON keys
+   • UpperPascalCase → exported types, structs, functions
+   • UPPER_CASE → constants
+   • Use kebab-case for filenames, folders, and case-insensitive identifiers.
+ • Insert whitespace lines to separate variable declarations, return statements, and major logic blocks.
+ • Avoid magic numbers. Define constants for reusable numeric values.
+ • Use build tags appropriately for platform or environment-specific logic.
+ • All publicly exposed functions, types, and packages must be documented with GoDoc comments.
+ • Package-level docs must describe the role of the package.
+ • Write unit tests for every exported function and type.
+ • Aim for at least 70% test coverage.
+ • Use table-driven tests with descriptive case names.
+ • For probabilistic logic, use fixed seeds for reproducibility.
+ • Design types and functions to support future extensions like orthography and cultural links.
+ • Keep abstractions clean: avoid premature optimization. Prioritize clarity and extensibility.
+ • When generating new code, also add or change unit tests relevant for the new code.
+ • Each package should contain a root `package.go` file with package level documentation applied.
