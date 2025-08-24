@@ -2,7 +2,6 @@ package evolution
 
 import (
 	"fmt"
-	"math/rand/v2"
 	"time"
 
 	"github.com/chris-pikul/kismet-zero/lang/phoneme"
@@ -181,19 +180,15 @@ var CommonSoundChangeRules = []SoundChangeRule{
 
 // SoundChangeEngine manages the application of sound change rules to a phonology.
 type SoundChangeEngine struct {
-	rules  []SoundChangeRule
-	rng    *rand.Rand
-	config EvolutionConfig
+	BaseEngine
+	rules []SoundChangeRule
 }
 
 // NewSoundChangeEngine creates a new sound change engine with the given configuration.
 func NewSoundChangeEngine(config EvolutionConfig) *SoundChangeEngine {
-	rng := rand.New(rand.NewPCG(uint64(config.Seed), 0))
-
 	return &SoundChangeEngine{
-		rules:  CommonSoundChangeRules,
-		rng:    rng,
-		config: config,
+		BaseEngine: NewBaseEngine(config),
+		rules:      CommonSoundChangeRules,
 	}
 }
 
@@ -213,7 +208,7 @@ func (sce *SoundChangeEngine) ApplySoundChanges(ph *phonology.Phonology, era str
 			continue // Skip rules not applicable to this era
 		}
 
-		if sce.rng.Float32() < rule.Probability {
+		if sce.GetRandomFloat32() < rule.Probability {
 			change := sce.applyRule(rule, modifiedPhonology, era)
 			if change != nil {
 				changes = append(changes, *change)
@@ -256,17 +251,4 @@ func (sce *SoundChangeEngine) clonePhonology(ph *phonology.Phonology) *phonology
 	// This is a simplified clone - in practice, you'd need to deep copy
 	// all phonology components including the phoneme pool, templates, and rules
 	return ph
-}
-
-// GenerateRandomSoundChange creates a new sound change rule based on the current phonology.
-func (sce *SoundChangeEngine) GenerateRandomSoundChange(ph *phonology.Phonology, era string) SoundChangeRule {
-	// This would analyze the current phonology and generate plausible new rules
-	// For now, return a basic rule
-	return SoundChangeRule{
-		ID:          fmt.Sprintf("generated_%d", time.Now().Unix()),
-		Name:        "Generated Sound Change",
-		Description: "A randomly generated phonological change",
-		Probability: 0.3,
-		Era:         era,
-	}
 }

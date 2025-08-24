@@ -263,6 +263,114 @@ func TestOrthographicChange_Structure(t *testing.T) {
 	}
 }
 
+// TestOrthographicEvolutionEngine_ApplyScriptReforms tests the script reform application.
+func TestOrthographicEvolutionEngine_ApplyScriptReforms(t *testing.T) {
+	config := EvolutionConfig{
+		Seed:                    42,
+		SoundShiftProbability:   0.3,
+		MorphologyChangeRate:    0.2,
+		OrthographyChangeRate:   0.1,
+		ContactInfluenceRate:    0.4,
+		CulturalInfluenceWeight: 0.3,
+		DialectFormationRate:    0.2,
+	}
+
+	engine := NewOrthographicEvolutionEngine(config)
+	writingSystem := createTestWritingSystem()
+
+	// Test script reforms for different eras
+	testCases := []struct {
+		era string
+	}{
+		{"early_evolution"},
+		{"middle_evolution"},
+		{"late_evolution"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.era, func(t *testing.T) {
+			changes := engine.applyScriptReforms(writingSystem, tc.era)
+
+			// The function should return changes (even if empty)
+			if changes == nil {
+				t.Logf("No script reform changes for %s (this is expected behavior)", tc.era)
+			} else {
+				t.Logf("Applied script reform changes for %s: %v", tc.era, changes)
+
+				// Verify the changes have the expected properties
+				for _, change := range changes {
+					if change.Type != OrthographicChangeTypeScriptReform {
+						t.Errorf("Expected change type OrthographicChangeTypeScriptReform, got %s", change.Type.String())
+					}
+					if change.Era != tc.era {
+						t.Errorf("Expected era %s, got %s", tc.era, change.Era)
+					}
+					if change.Trigger != "orthographic_reform" {
+						t.Errorf("Expected trigger 'orthographic_reform', got %s", change.Trigger)
+					}
+					if change.ScriptReformType == "" {
+						t.Error("Expected ScriptReformType to be set")
+					}
+					if change.ComplexityChange >= 0 {
+						t.Errorf("Expected negative complexity change for script reform, got %f", change.ComplexityChange)
+					}
+				}
+			}
+		})
+	}
+}
+
+// TestOrthographicEvolutionEngine_ApplyStandardizationChanges tests the standardization changes.
+func TestOrthographicEvolutionEngine_ApplyStandardizationChanges(t *testing.T) {
+	config := EvolutionConfig{
+		Seed:                    42,
+		SoundShiftProbability:   0.3,
+		MorphologyChangeRate:    0.2,
+		OrthographyChangeRate:   0.1,
+		ContactInfluenceRate:    0.4,
+		CulturalInfluenceWeight: 0.3,
+		DialectFormationRate:    0.2,
+	}
+
+	engine := NewOrthographicEvolutionEngine(config)
+	writingSystem := createTestWritingSystem()
+
+	// Test standardization changes for different eras
+	testCases := []struct {
+		era string
+	}{
+		{"early_evolution"},
+		{"middle_evolution"},
+		{"late_evolution"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.era, func(t *testing.T) {
+			changes := engine.applyStandardizationChanges(writingSystem, tc.era)
+
+			// The function should return changes (even if empty)
+			if changes == nil {
+				t.Logf("No standardization changes for %s (this is expected behavior)", tc.era)
+			} else {
+				t.Logf("Applied standardization changes for %s: %v", tc.era, changes)
+
+				// Verify the changes have the expected properties
+				for _, change := range changes {
+					if change.Type != OrthographicChangeTypeStandardization {
+						t.Errorf("Expected change type OrthographicChangeTypeStandardization, got %s", change.Type.String())
+					}
+					if change.Era != tc.era {
+						t.Errorf("Expected era %s, got %s", tc.era, change.Era)
+					}
+					if change.Trigger != "standardization" {
+						t.Errorf("Expected trigger 'standardization', got %s", change.Trigger)
+					}
+				}
+			}
+		})
+	}
+}
+
 // Helper function to create a test writing system
 func createTestWritingSystem() *orthography.WritingSystem {
 	// Create some test graphemes

@@ -314,3 +314,59 @@ func ExampleDialectFeatures() {
 	fmt.Printf("Grammatical features: %v\n", dialect.Features.GrammaticalFeatures)
 	fmt.Printf("Intelligibility: %.2f\n", dialect.Features.IntelligibilityScore)
 }
+
+// ExampleLinguisticAdaptation demonstrates the enhanced linguistic adaptation system.
+func ExampleLinguisticAdaptation() {
+	config := DefaultEvolutionConfig(42)
+	engine := NewEvolutionEngine(config)
+
+	// Create a test language
+	testLang := lang.NewLanguage(
+		lang.LanguageID{Family: "test", Branch: "test", Language: "testlang"},
+		"Test Language",
+		lang.LanguageTypeNatural,
+		42,
+	)
+
+	fmt.Printf("Language: %s\n", testLang.Name)
+
+	// Generate a random phonological adaptation
+	adaptation, err := engine.GenerateRandomAdaptation(testLang, "phonological")
+	if err != nil {
+		fmt.Printf("Error generating adaptation: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Generated adaptation: %s\n", adaptation.Description)
+	fmt.Printf("Adaptation type: %s\n", adaptation.Type)
+	fmt.Printf("Complexity change: %.2f\n", adaptation.ComplexityChange)
+
+	// Apply the phonological adaptation
+	change, err := engine.ApplyLinguisticAdaptation(testLang, adaptation)
+	if err != nil {
+		fmt.Printf("Error applying adaptation: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Applied change: %s\n", change.Description)
+	fmt.Printf("Change type: %s\n", change.Type.String())
+	fmt.Printf("Change direction: %s\n", change.Direction.String())
+	fmt.Printf("Intensity: %.2f\n", change.Intensity)
+
+	// Test borrowing pattern application
+	borrowingPattern := &BorrowingPattern{
+		SelectiveAdoption:     0.7,
+		AdaptationStrength:    0.8,
+		IntegrationDepth:      0.6,
+		ResistanceLevel:       0.3,
+		PrestigeSensitivity:   0.5,
+		HybridizationTendency: 0.4,
+	}
+
+	borrowingChange, err := engine.ApplyBorrowingPattern(testLang, borrowingPattern, "Source Language", "cultural")
+	if err != nil {
+		fmt.Printf("Failed to apply borrowing pattern: %v\n", err)
+	} else {
+		fmt.Printf("Applied borrowing pattern: %s\n", borrowingChange.Description)
+	}
+}

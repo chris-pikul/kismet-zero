@@ -324,7 +324,7 @@ func TestSocialStratificationIntegration(t *testing.T) {
 		}
 
 		// Verify social stratification changes were applied
-		socialChanges := dialect.GetLinguisticChanges(LinguisticChangeTypeDialectal)
+		socialChanges := dialect.GetLinguisticChangesByType(LinguisticChangeTypeDialectal)
 		if len(socialChanges) < 7 { // 6 social + 1 formation
 			t.Errorf("Expected at least 7 dialect changes (6 social + 1 formation), got %d", len(socialChanges))
 		}

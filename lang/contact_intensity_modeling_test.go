@@ -54,11 +54,10 @@ func TestEffectiveIntensityCalculation(t *testing.T) {
 
 	t.Run("Trade Contact Intensity", func(t *testing.T) {
 		// Test trade contact with moderate duration
-		effectiveIntensity := calculator.CalculateEffectiveIntensity(
+		effectiveIntensity := calculator.CalculateIntensity(
 			ContactTypeTrade,
-			0.5,          // base intensity
 			24*time.Hour, // duration
-			nil,          // no history
+			0.5,          // frequency
 			0.5,          // geographic proximity
 		)
 
@@ -73,11 +72,10 @@ func TestEffectiveIntensityCalculation(t *testing.T) {
 
 	t.Run("Conquest Contact Intensity", func(t *testing.T) {
 		// Test conquest contact - should have high intensity
-		effectiveIntensity := calculator.CalculateEffectiveIntensity(
+		effectiveIntensity := calculator.CalculateIntensity(
 			ContactTypeConquest,
-			0.8,         // base intensity
 			2*time.Hour, // short duration
-			nil,         // no history
+			0.8,         // frequency
 			0.0,         // no geographic proximity
 		)
 
@@ -91,20 +89,18 @@ func TestEffectiveIntensityCalculation(t *testing.T) {
 
 	t.Run("Duration Scaling", func(t *testing.T) {
 		// Test that longer duration increases intensity
-		shortIntensity := calculator.CalculateEffectiveIntensity(
+		shortIntensity := calculator.CalculateIntensity(
 			ContactTypeTrade,
-			0.5,
-			1*time.Hour,
-			nil,
-			0.5,
+			1*time.Hour, // duration
+			0.5,         // frequency
+			0.5,         // geographic proximity
 		)
 
-		longIntensity := calculator.CalculateEffectiveIntensity(
+		longIntensity := calculator.CalculateIntensity(
 			ContactTypeTrade,
-			0.5,
-			7*24*time.Hour, // 1 week
-			nil,
-			0.5,
+			7*24*time.Hour, // 1 week duration
+			0.5,            // frequency
+			0.5,            // geographic proximity
 		)
 
 		if longIntensity <= shortIntensity {
@@ -117,20 +113,18 @@ func TestEffectiveIntensityCalculation(t *testing.T) {
 
 	t.Run("Geographic Proximity", func(t *testing.T) {
 		// Test that geographic proximity affects intensity
-		closeIntensity := calculator.CalculateEffectiveIntensity(
+		closeIntensity := calculator.CalculateIntensity(
 			ContactTypeMigration,
-			0.5,
-			24*time.Hour,
-			nil,
-			0.9, // high proximity
+			24*time.Hour, // duration
+			0.5,          // frequency
+			0.9,          // high proximity
 		)
 
-		farIntensity := calculator.CalculateEffectiveIntensity(
+		farIntensity := calculator.CalculateIntensity(
 			ContactTypeMigration,
-			0.5,
-			24*time.Hour,
-			nil,
-			0.1, // low proximity
+			24*time.Hour, // duration
+			0.5,          // frequency
+			0.1,          // low proximity
 		)
 
 		if closeIntensity <= farIntensity {

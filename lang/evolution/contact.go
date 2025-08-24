@@ -2,7 +2,6 @@ package evolution
 
 import (
 	"fmt"
-	"math/rand/v2"
 	"time"
 
 	"github.com/chris-pikul/kismet-zero/lang"
@@ -68,75 +67,99 @@ func (bt BorrowingType) String() string {
 
 // ContactEvolutionEngine manages contact-induced language changes.
 type ContactEvolutionEngine struct {
-	rng    *rand.Rand
-	config EvolutionConfig
+	BaseEngine
 }
 
 // NewContactEvolutionEngine creates a new contact evolution engine.
 func NewContactEvolutionEngine(config EvolutionConfig) *ContactEvolutionEngine {
-	rng := rand.New(rand.NewPCG(uint64(config.Seed), 0))
-
 	return &ContactEvolutionEngine{
-		rng:    rng,
-		config: config,
+		BaseEngine: NewBaseEngine(config),
 	}
 }
 
-// SimulateContact simulates linguistic contact between two languages.
-// Returns changes to the target language and a contact event record.
-func (cee *ContactEvolutionEngine) SimulateContact(
+// SimulateContactWithAdaptation simulates linguistic contact using the enhanced adaptation system.
+// This method provides access to the sophisticated adaptation tracking and borrowing patterns.
+func (cee *ContactEvolutionEngine) SimulateContactWithAdaptation(
 	sourceLang *lang.Language,
 	targetLang *lang.Language,
 	contactType ContactType,
 	intensity float32,
 	duration time.Duration,
-) ([]LinguisticChange, ContactEvent) {
+	adaptationEngine *LinguisticAdaptationEngine,
+) ([]LinguisticChange, ContactEvent, error) {
+	if adaptationEngine == nil {
+		return nil, ContactEvent{}, fmt.Errorf("adaptation engine cannot be nil")
+	}
 
+	// Create the contact event
 	contactEvent := ContactEvent{
-		ID:          fmt.Sprintf("contact_%s_%d", sourceLang.ID.String(), time.Now().Unix()),
+		ID:          fmt.Sprintf("contact_adaptation_%s_%d", sourceLang.ID.String(), time.Now().Unix()),
 		Timestamp:   time.Now(),
 		SourceLang:  sourceLang.ID.String(),
 		TargetLang:  targetLang.ID.String(),
 		Type:        contactType.String(),
 		Intensity:   intensity,
 		Duration:    duration,
-		Description: fmt.Sprintf("%s contact between %s and %s", contactType.String(), sourceLang.Name, targetLang.Name),
+		Description: fmt.Sprintf("%s contact with adaptation tracking between %s and %s", contactType.String(), sourceLang.Name, targetLang.Name),
 	}
 
 	var changes []LinguisticChange
 
 	// Determine what gets borrowed based on contact type and intensity
-	if intensity >= cee.config.BorrowingThreshold {
-		// Lexical borrowing (most common)
-		if cee.rng.Float32() < 0.8 {
-			lexicalChanges := cee.simulateLexicalBorrowing(sourceLang, targetLang, intensity, contactType)
-			changes = append(changes, lexicalChanges...)
-			contactEvent.LexicalBorrowing = true
+	if intensity >= cee.GetConfig().BorrowingThreshold {
+		// Create borrowing patterns based on contact type and intensity
+		borrowingPattern := cee.createBorrowingPattern(contactType, intensity)
+
+		// Apply the borrowing pattern using the adaptation engine
+		change, err := adaptationEngine.ApplyBorrowingPattern(targetLang, borrowingPattern, sourceLang.Name, contactType.String())
+		if err != nil {
+			return nil, ContactEvent{}, fmt.Errorf("failed to apply borrowing pattern: %w", err)
 		}
 
-		// Phonological borrowing (less common)
-		if cee.rng.Float32() < 0.4 && intensity > 0.6 {
-			phonologicalChanges := cee.simulatePhonologicalBorrowing(sourceLang, targetLang, intensity)
-			changes = append(changes, phonologicalChanges...)
-			contactEvent.PhonologicalBorrowing = true
+		if change != nil {
+			changes = append(changes, *change)
+
+			// Update contact event based on the type of borrowing
+			switch change.Type {
+			case ChangeTypeLexical:
+				contactEvent.LexicalBorrowing = true
+			case ChangeTypeSoundShift:
+				contactEvent.PhonologicalBorrowing = true
+			case ChangeTypeMorphological:
+				contactEvent.GrammaticalInfluence = true
+			case ChangeTypeOrthographic:
+				contactEvent.OrthographicBorrowing = true
+			}
 		}
 
-		// Grammatical borrowing (least common)
-		if cee.rng.Float32() < 0.2 && intensity > 0.8 {
-			grammaticalChanges := cee.simulateGrammaticalBorrowing(sourceLang, targetLang, intensity)
-			changes = append(changes, grammaticalChanges...)
-			contactEvent.GrammaticalInfluence = true
-		}
-
-		// Orthographic borrowing (writing system features)
-		if cee.rng.Float32() < 0.15 && intensity > 0.7 {
-			orthographicChanges := cee.simulateOrthographicBorrowing(sourceLang, targetLang, intensity, contactType)
-			changes = append(changes, orthographicChanges...)
-			contactEvent.OrthographicBorrowing = true
+		// Generate additional adaptations based on contact intensity
+		if intensity > 0.7 {
+			adaptation, err := adaptationEngine.GenerateRandomAdaptation(targetLang, "phonological")
+			if err == nil && adaptation != nil {
+				change, err := adaptationEngine.ApplyPhonologicalAdaptation(targetLang, adaptation.PhonologicalChange)
+				if err == nil && change != nil {
+					changes = append(changes, *change)
+				}
+			}
 		}
 	}
 
-	return changes, contactEvent
+	return changes, contactEvent, nil
+}
+
+// createBorrowingPattern creates a borrowing pattern based on contact type and intensity.
+func (cee *ContactEvolutionEngine) createBorrowingPattern(contactType ContactType, intensity float32) *BorrowingPattern {
+	// Create a borrowing pattern with characteristics based on contact type
+	pattern := &BorrowingPattern{
+		SelectiveAdoption:     intensity * 0.8, // Higher intensity = more selective
+		AdaptationStrength:    intensity * 0.9, // Higher intensity = stronger adaptation
+		IntegrationDepth:      intensity * 0.7, // Higher intensity = deeper integration
+		ResistanceLevel:       1.0 - intensity, // Higher intensity = lower resistance
+		PrestigeSensitivity:   intensity * 0.6, // Higher intensity = more prestige sensitive
+		HybridizationTendency: intensity * 0.5, // Higher intensity = more hybridization
+	}
+
+	return pattern
 }
 
 // simulateLexicalBorrowing simulates the borrowing of words from one language to another.
@@ -153,7 +176,7 @@ func (cee *ContactEvolutionEngine) simulateLexicalBorrowing(
 	numWords := int(intensity * 20) // 0-20 words based on intensity
 
 	for i := 0; i < numWords; i++ {
-		if cee.rng.Float32() < 0.7 { // 70% chance per word
+		if cee.GetRandomFloat32() < 0.7 { // 70% chance per word
 			change := &LinguisticChange{
 				ID:               fmt.Sprintf("lexical_borrowing_%d", time.Now().UnixNano()),
 				Type:             ChangeTypeLexical,
@@ -183,7 +206,7 @@ func (cee *ContactEvolutionEngine) simulatePhonologicalBorrowing(
 	var changes []LinguisticChange
 
 	// Phonological borrowing is more selective
-	if cee.rng.Float32() < intensity {
+	if cee.GetRandomFloat32() < intensity {
 		change := &LinguisticChange{
 			ID:               fmt.Sprintf("phonological_borrowing_%d", time.Now().UnixNano()),
 			Type:             ChangeTypeSoundShift,
@@ -212,7 +235,7 @@ func (cee *ContactEvolutionEngine) simulateGrammaticalBorrowing(
 	var changes []LinguisticChange
 
 	// Grammatical borrowing is the rarest and most significant
-	if cee.rng.Float32() < intensity*0.5 {
+	if cee.GetRandomFloat32() < intensity*0.5 {
 		change := &LinguisticChange{
 			ID:               fmt.Sprintf("grammatical_borrowing_%d", time.Now().UnixNano()),
 			Type:             ChangeTypeMorphological,
@@ -280,7 +303,7 @@ func (cee *ContactEvolutionEngine) simulateOrthographicBorrowing(
 	var changes []LinguisticChange
 
 	// Orthographic borrowing is very selective and depends on writing system compatibility
-	if cee.rng.Float32() < intensity*0.3 {
+	if cee.GetRandomFloat32() < intensity*0.3 {
 		change := &LinguisticChange{
 			ID:               fmt.Sprintf("orthographic_borrowing_%d", time.Now().UnixNano()),
 			Type:             ChangeTypeOrthographic,

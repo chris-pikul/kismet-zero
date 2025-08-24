@@ -2,7 +2,6 @@ package evolution
 
 import (
 	"fmt"
-	"math/rand/v2"
 	"time"
 
 	"github.com/chris-pikul/kismet-zero/lang/orthography"
@@ -67,17 +66,13 @@ type OrthographicChange struct {
 
 // OrthographicEvolutionEngine manages orthographic changes in a language.
 type OrthographicEvolutionEngine struct {
-	rng    *rand.Rand
-	config EvolutionConfig
+	BaseEngine
 }
 
 // NewOrthographicEvolutionEngine creates a new orthographic evolution engine.
 func NewOrthographicEvolutionEngine(config EvolutionConfig) *OrthographicEvolutionEngine {
-	rng := rand.New(rand.NewPCG(uint64(config.Seed), 0))
-
 	return &OrthographicEvolutionEngine{
-		rng:    rng,
-		config: config,
+		BaseEngine: NewBaseEngine(config),
 	}
 }
 
@@ -90,25 +85,25 @@ func (oee *OrthographicEvolutionEngine) ApplyOrthographicChanges(
 	changes := make([]OrthographicChange, 0)
 
 	// Apply script reforms (less common but significant)
-	if oee.rng.Float32() < oee.config.ScriptReformRate {
+	if oee.GetRandomFloat32() < oee.GetConfig().ScriptReformRate {
 		reformChanges := oee.applyScriptReforms(writingSystem, era)
 		changes = append(changes, reformChanges...)
 	}
 
 	// Apply simplification changes
-	if oee.rng.Float32() < oee.config.OrthographyChangeRate*0.8 {
+	if oee.GetRandomFloat32() < oee.GetConfig().OrthographyChangeRate*0.8 {
 		simplificationChanges := oee.applySimplificationChanges(writingSystem, era)
 		changes = append(changes, simplificationChanges...)
 	}
 
 	// Apply standardization changes
-	if oee.rng.Float32() < oee.config.OrthographyChangeRate*0.6 {
+	if oee.GetRandomFloat32() < oee.GetConfig().OrthographyChangeRate*0.6 {
 		standardizationChanges := oee.applyStandardizationChanges(writingSystem, era)
 		changes = append(changes, standardizationChanges...)
 	}
 
 	// Apply innovation changes (least common)
-	if oee.rng.Float32() < oee.config.OrthographyChangeRate*0.4 {
+	if oee.GetRandomFloat32() < oee.GetConfig().OrthographyChangeRate*0.4 {
 		innovationChanges := oee.applyInnovationChanges(writingSystem, era)
 		changes = append(changes, innovationChanges...)
 	}
@@ -124,7 +119,7 @@ func (oee *OrthographicEvolutionEngine) applyScriptReforms(
 	var changes []OrthographicChange
 
 	// Example: Spelling reform
-	if oee.rng.Float32() < 0.6 {
+	if oee.GetRandomFloat32() < 0.6 {
 		change := &OrthographicChange{
 			ID:                fmt.Sprintf("spelling_reform_%d", time.Now().UnixNano()),
 			Type:              OrthographicChangeTypeScriptReform,
@@ -142,7 +137,7 @@ func (oee *OrthographicEvolutionEngine) applyScriptReforms(
 	}
 
 	// Example: Character simplification
-	if oee.rng.Float32() < 0.4 {
+	if oee.GetRandomFloat32() < 0.4 {
 		change := &OrthographicChange{
 			ID:                fmt.Sprintf("character_simplification_%d", time.Now().UnixNano()),
 			Type:              OrthographicChangeTypeScriptReform,
@@ -170,7 +165,7 @@ func (oee *OrthographicEvolutionEngine) applySimplificationChanges(
 	var changes []OrthographicChange
 
 	// Example: Remove redundant graphemes
-	if oee.rng.Float32() < 0.5 {
+	if oee.GetRandomFloat32() < 0.5 {
 		change := &OrthographicChange{
 			ID:                fmt.Sprintf("remove_redundant_graphemes_%d", time.Now().UnixNano()),
 			Type:              OrthographicChangeTypeSimplification,
@@ -187,7 +182,7 @@ func (oee *OrthographicEvolutionEngine) applySimplificationChanges(
 	}
 
 	// Example: Simplify complex mappings
-	if oee.rng.Float32() < 0.4 {
+	if oee.GetRandomFloat32() < 0.4 {
 		change := &OrthographicChange{
 			ID:               fmt.Sprintf("simplify_mappings_%d", time.Now().UnixNano()),
 			Type:             OrthographicChangeTypeSimplification,
@@ -214,7 +209,7 @@ func (oee *OrthographicEvolutionEngine) applyStandardizationChanges(
 	var changes []OrthographicChange
 
 	// Example: Standardize spelling
-	if oee.rng.Float32() < 0.6 {
+	if oee.GetRandomFloat32() < 0.6 {
 		change := &OrthographicChange{
 			ID:               fmt.Sprintf("standardize_spelling_%d", time.Now().UnixNano()),
 			Type:             OrthographicChangeTypeStandardization,
@@ -231,7 +226,7 @@ func (oee *OrthographicEvolutionEngine) applyStandardizationChanges(
 	}
 
 	// Example: Standardize character forms
-	if oee.rng.Float32() < 0.4 {
+	if oee.GetRandomFloat32() < 0.4 {
 		change := &OrthographicChange{
 			ID:                fmt.Sprintf("standardize_characters_%d", time.Now().UnixNano()),
 			Type:              OrthographicChangeTypeStandardization,
@@ -258,7 +253,7 @@ func (oee *OrthographicEvolutionEngine) applyInnovationChanges(
 	var changes []OrthographicChange
 
 	// Example: Add new punctuation
-	if oee.rng.Float32() < 0.5 {
+	if oee.GetRandomFloat32() < 0.5 {
 		change := &OrthographicChange{
 			ID:                fmt.Sprintf("add_punctuation_%d", time.Now().UnixNano()),
 			Type:              OrthographicChangeTypeInnovation,
@@ -275,7 +270,7 @@ func (oee *OrthographicEvolutionEngine) applyInnovationChanges(
 	}
 
 	// Example: Add diacritical marks
-	if oee.rng.Float32() < 0.3 {
+	if oee.GetRandomFloat32() < 0.3 {
 		change := &OrthographicChange{
 			ID:                fmt.Sprintf("add_diacritics_%d", time.Now().UnixNano()),
 			Type:              OrthographicChangeTypeInnovation,
@@ -306,7 +301,7 @@ func (oee *OrthographicEvolutionEngine) SimulateOrthographicBorrowing(
 	// Determine what gets borrowed based on type and intensity
 	switch borrowingType {
 	case "graphemes":
-		if oee.rng.Float32() < intensity {
+		if oee.GetRandomFloat32() < intensity {
 			change := &OrthographicChange{
 				ID:                fmt.Sprintf("borrow_graphemes_%d", time.Now().UnixNano()),
 				Type:              OrthographicChangeTypeBorrowing,
@@ -324,7 +319,7 @@ func (oee *OrthographicEvolutionEngine) SimulateOrthographicBorrowing(
 		}
 
 	case "mappings":
-		if oee.rng.Float32() < intensity*0.7 {
+		if oee.GetRandomFloat32() < intensity*0.7 {
 			change := &OrthographicChange{
 				ID:               fmt.Sprintf("borrow_mappings_%d", time.Now().UnixNano()),
 				Type:             OrthographicChangeTypeBorrowing,
@@ -342,7 +337,7 @@ func (oee *OrthographicEvolutionEngine) SimulateOrthographicBorrowing(
 		}
 
 	case "style":
-		if oee.rng.Float32() < intensity*0.5 {
+		if oee.GetRandomFloat32() < intensity*0.5 {
 			change := &OrthographicChange{
 				ID:               fmt.Sprintf("borrow_style_%d", time.Now().UnixNano()),
 				Type:             OrthographicChangeTypeBorrowing,

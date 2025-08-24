@@ -1059,7 +1059,7 @@ func ConfigureInterlinguaServices(language *Language) error {
 	}
 
 	// Create new interlingua services
-	services := NewInterlinguaServices()
+	services := interlingua.NewInterlinguaServices()
 
 	// Create English analyzer and realizer
 	conceptResolver := interlingua.NewInMemoryConceptResolver()
@@ -2792,6 +2792,11 @@ func (dde *DialectDetectionEngine) calculateDialectSimilarity(dialect1, dialect2
 		return 0.0
 	}
 
+	// Check if they are the same dialect (self-similarity)
+	if dialect1.ID == dialect2.ID {
+		return 1.0
+	}
+
 	// Check if they share a common parent
 	if dialect1.ParentID != nil && dialect2.ParentID != nil && *dialect1.ParentID == *dialect2.ParentID {
 		// Siblings get high similarity
@@ -3002,11 +3007,11 @@ func (dde *DialectDetectionEngine) AutoCreateDialect(
 
 // InterlinguaPipeline represents a complete translation pipeline between any two languages.
 type InterlinguaPipeline struct {
-	services *InterlinguaServices
+	services *interlingua.InterlinguaServices
 }
 
 // NewInterlinguaPipeline creates a new interlingua pipeline with the given services.
-func NewInterlinguaPipeline(services *InterlinguaServices) *InterlinguaPipeline {
+func NewInterlinguaPipeline(services *interlingua.InterlinguaServices) *InterlinguaPipeline {
 	return &InterlinguaPipeline{
 		services: services,
 	}

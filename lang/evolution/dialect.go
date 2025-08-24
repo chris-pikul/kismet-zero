@@ -2,7 +2,6 @@ package evolution
 
 import (
 	"fmt"
-	"math/rand/v2"
 	"time"
 
 	"github.com/chris-pikul/kismet-zero/lang"
@@ -10,17 +9,13 @@ import (
 
 // DialectFormationEngine manages the creation and evolution of dialects.
 type DialectFormationEngine struct {
-	config EvolutionConfig
-	rng    *rand.Rand
+	BaseEngine
 }
 
 // NewDialectFormationEngine creates a new dialect formation engine.
 func NewDialectFormationEngine(config EvolutionConfig) *DialectFormationEngine {
-	rng := rand.New(rand.NewPCG(uint64(config.Seed), 0))
-
 	return &DialectFormationEngine{
-		config: config,
-		rng:    rng,
+		BaseEngine: NewBaseEngine(config),
 	}
 }
 
@@ -54,7 +49,7 @@ func (dfe *DialectFormationEngine) CreateGeographicDialect(
 		FormationDate: time.Now(),
 		Era:           era,
 		Status:        "active",
-		Seed:          dfe.rng.Int64(),
+		Seed:          dfe.GetRNG().Int64(),
 	}
 
 	// Create formation event
@@ -67,7 +62,7 @@ func (dfe *DialectFormationEngine) CreateGeographicDialect(
 		GeographicFactors: geographicFactors,
 		Intensity:         dfe.calculateFormationIntensity(geographicFactors),
 		Description:       fmt.Sprintf("Geographic dialect formed in %s region", region.Name),
-		Seed:              dfe.rng.Int64(),
+		Seed:              dfe.GetRNG().Int64(),
 	}
 
 	return dialect, formationEvent, nil
@@ -120,7 +115,7 @@ func (dfe *DialectFormationEngine) CreateSocialDialect(
 		FormationDate: time.Now(),
 		Era:           era,
 		Status:        "active",
-		Seed:          dfe.rng.Int64(),
+		Seed:          dfe.GetRNG().Int64(),
 	}
 
 	// Create formation event
@@ -133,7 +128,7 @@ func (dfe *DialectFormationEngine) CreateSocialDialect(
 		SocialFactors: socialFactors,
 		Intensity:     dfe.calculateFormationIntensity(socialFactors),
 		Description:   fmt.Sprintf("%s dialect formed for %s class", dialectType.String(), socialClass),
-		Seed:          dfe.rng.Int64(),
+		Seed:          dfe.GetRNG().Int64(),
 	}
 
 	return dialect, formationEvent, nil
@@ -169,7 +164,7 @@ func (dfe *DialectFormationEngine) EvolveDialect(
 		Changes:     changes,
 		TriggerType: "dialectal_evolution",
 		Intensity:   dfe.calculateOverallIntensity(changes),
-		Seed:        dfe.rng.Int64(),
+		Seed:        dfe.GetRNG().Int64(),
 	}
 
 	// Add to evolution history
@@ -357,7 +352,7 @@ func (dfe *DialectFormationEngine) applyDialectalChanges(dialect *Dialect, era s
 	var changes []LinguisticChange
 
 	// Apply changes based on dialect type and region
-	if dfe.rng.Float32() < dfe.config.DialectFormationRate {
+	if dfe.GetRNG().Float32() < dfe.GetConfig().DialectFormationRate {
 		// Phonological drift
 		if len(dialect.Features.PhonologicalFeatures) > 0 {
 			change := LinguisticChange{
@@ -375,7 +370,7 @@ func (dfe *DialectFormationEngine) applyDialectalChanges(dialect *Dialect, era s
 		}
 
 		// Lexical innovation
-		if dfe.rng.Float32() < 0.3 {
+		if dfe.GetRNG().Float32() < 0.3 {
 			change := LinguisticChange{
 				ID:          fmt.Sprintf("dialectal_lexical_%d", time.Now().UnixNano()),
 				Type:        ChangeTypeDialectal,

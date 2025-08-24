@@ -313,7 +313,7 @@ func TestAutomaticDialectCreation(t *testing.T) {
 		}
 
 		// Verify automatic formation change was recorded
-		dialectChanges := dialect.GetLinguisticChanges(LinguisticChangeTypeDialectal)
+		dialectChanges := dialect.GetLinguisticChangesByType(LinguisticChangeTypeDialectal)
 		if len(dialectChanges) == 0 {
 			t.Error("Expected dialect formation change to be recorded")
 		}

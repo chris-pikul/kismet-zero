@@ -2,7 +2,6 @@ package evolution
 
 import (
 	"fmt"
-	"math/rand/v2"
 	"time"
 
 	"github.com/chris-pikul/kismet-zero/lang"
@@ -119,17 +118,13 @@ type CulturalInfluenceEvent struct {
 
 // CulturalInfluenceEngine manages sophisticated cultural influence and borrowing.
 type CulturalInfluenceEngine struct {
-	rng    *rand.Rand
-	config EvolutionConfig
+	BaseEngine
 }
 
 // NewCulturalInfluenceEngine creates a new cultural influence engine.
 func NewCulturalInfluenceEngine(config EvolutionConfig) *CulturalInfluenceEngine {
-	rng := rand.New(rand.NewPCG(uint64(config.Seed), 0))
-
 	return &CulturalInfluenceEngine{
-		rng:    rng,
-		config: config,
+		BaseEngine: NewBaseEngine(config),
 	}
 }
 
@@ -169,7 +164,7 @@ func (cie *CulturalInfluenceEngine) SimulateCulturalInfluence(
 	var changes []LinguisticChange
 
 	// Determine what gets influenced based on compatibility and intensity
-	if finalIntensity >= cie.config.BorrowingThreshold {
+	if finalIntensity >= cie.GetConfig().BorrowingThreshold {
 		// Orthographic influence (writing system borrowing)
 		if cie.shouldInfluenceOrthography(contactType, finalIntensity, compatibility) {
 			orthoChanges := cie.simulateOrthographicInfluence(sourceLang, targetLang, finalIntensity, contactType, compatibility)
@@ -234,7 +229,7 @@ func (cie *CulturalInfluenceEngine) calculateCulturalCompatibility(
 	linguisticSimilarity := float32(0.5) // Base similarity
 
 	// Historical relationship (random for now, could be enhanced with actual history)
-	historicalRelationship := cie.rng.Float32()
+	historicalRelationship := cie.GetRandomFloat32()
 
 	// Power balance (based on cultural power indicators)
 	sourcePower := (sourceIdentity.EconomicPower + sourceIdentity.MilitaryPower + sourceIdentity.CulturalConfidence) / 3.0
@@ -242,7 +237,7 @@ func (cie *CulturalInfluenceEngine) calculateCulturalCompatibility(
 	powerBalance := sourcePower - targetPower // -1.0 to 1.0
 
 	// Geographic proximity (random for now, could be enhanced with actual geography)
-	geographicProximity := cie.rng.Float32()
+	geographicProximity := cie.GetRandomFloat32()
 
 	// Cultural values compatibility
 	culturalValues := 1.0 - abs(sourceIdentity.InnovationTendency-targetIdentity.InnovationTendency)
@@ -254,7 +249,7 @@ func (cie *CulturalInfluenceEngine) calculateCulturalCompatibility(
 	religiousCompatibility := 1.0 - abs(sourceIdentity.ReligiousInfluence-targetIdentity.ReligiousInfluence)
 
 	// Economic interdependence (random for now)
-	economicInterdependence := cie.rng.Float32()
+	economicInterdependence := cie.GetRandomFloat32()
 
 	return CulturalCompatibility{
 		LinguisticSimilarity:    linguisticSimilarity,
@@ -413,7 +408,7 @@ func (cie *CulturalInfluenceEngine) simulateOrthographicInfluence(
 	// Determine borrowing probability based on intensity and compatibility
 	borrowingProb := intensity * compatibility.LinguisticSimilarity * 0.8
 
-	if cie.rng.Float32() < borrowingProb {
+	if cie.GetRandomFloat32() < borrowingProb {
 		// Create orthographic change
 		change := LinguisticChange{
 			ID:               fmt.Sprintf("orthographic_influence_%d", time.Now().UnixNano()),
@@ -433,7 +428,7 @@ func (cie *CulturalInfluenceEngine) simulateOrthographicInfluence(
 	// Additional changes based on contact type
 	switch contactType {
 	case CulturalContactTypeConquest, CulturalContactTypeColonization:
-		if cie.rng.Float32() < intensity*0.6 {
+		if cie.GetRandomFloat32() < intensity*0.6 {
 			// Script reform under pressure
 			change := LinguisticChange{
 				ID:               fmt.Sprintf("script_reform_%d", time.Now().UnixNano()),
@@ -483,7 +478,7 @@ func (cie *CulturalInfluenceEngine) simulateLexicalInfluence(
 
 	// Generate lexical changes
 	for i := 0; i < adjustedWordCount; i++ {
-		if cie.rng.Float32() < 0.8 { // 80% chance per word
+		if cie.GetRandomFloat32() < 0.8 { // 80% chance per word
 
 			// Determine word category based on contact type
 			var wordCategory string
@@ -538,7 +533,7 @@ func (cie *CulturalInfluenceEngine) simulatePhonologicalInfluence(
 	// Calculate borrowing probability
 	borrowingProb := intensity * compatibility.LinguisticSimilarity * 0.5
 
-	if cie.rng.Float32() < borrowingProb {
+	if cie.GetRandomFloat32() < borrowingProb {
 		// Create phonological change
 		change := LinguisticChange{
 			ID:               fmt.Sprintf("phonological_influence_%d", time.Now().UnixNano()),
@@ -557,7 +552,7 @@ func (cie *CulturalInfluenceEngine) simulatePhonologicalInfluence(
 
 	// Additional phonological changes for high-intensity contact
 	if intensity > 0.8 && compatibility.LinguisticSimilarity > 0.7 {
-		if cie.rng.Float32() < 0.4 {
+		if cie.GetRandomFloat32() < 0.4 {
 			// Phoneme inventory expansion
 			change := LinguisticChange{
 				ID:               fmt.Sprintf("phoneme_expansion_%d", time.Now().UnixNano()),
@@ -595,7 +590,7 @@ func (cie *CulturalInfluenceEngine) simulateGrammaticalInfluence(
 	// Calculate borrowing probability (much lower than other types)
 	borrowingProb := intensity * compatibility.LinguisticSimilarity * 0.3
 
-	if cie.rng.Float32() < borrowingProb {
+	if cie.GetRandomFloat32() < borrowingProb {
 		// Create grammatical change
 		change := LinguisticChange{
 			ID:               fmt.Sprintf("grammatical_influence_%d", time.Now().UnixNano()),
@@ -614,7 +609,7 @@ func (cie *CulturalInfluenceEngine) simulateGrammaticalInfluence(
 
 	// Additional grammatical changes for very high-intensity contact
 	if intensity > 0.9 && compatibility.LinguisticSimilarity > 0.8 {
-		if cie.rng.Float32() < 0.3 {
+		if cie.GetRandomFloat32() < 0.3 {
 			// Syntax restructuring
 			change := LinguisticChange{
 				ID:               fmt.Sprintf("syntax_restructuring_%d", time.Now().UnixNano()),

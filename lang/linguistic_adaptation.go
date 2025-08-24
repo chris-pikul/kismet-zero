@@ -102,6 +102,9 @@ type MorphologicalAdaptation struct {
 
 // ApplyPhonologicalAdaptation applies actual phonological changes to a language.
 func ApplyPhonologicalAdaptation(lang *Language, adaptation PhonologicalAdaptation, sourceLang *Language, seed int64) error {
+	if lang == nil {
+		return fmt.Errorf("language cannot be nil")
+	}
 	if lang.Phonology == nil {
 		return fmt.Errorf("language has no phonology system")
 	}
@@ -144,6 +147,9 @@ func ApplyPhonologicalAdaptation(lang *Language, adaptation PhonologicalAdaptati
 
 // ApplyGrammaticalAdaptation applies actual grammatical changes to a language.
 func ApplyGrammaticalAdaptation(lang *Language, adaptation GrammaticalAdaptation, sourceLang *Language, seed int64) error {
+	if lang == nil {
+		return fmt.Errorf("language cannot be nil")
+	}
 	if lang.Grammar == nil {
 		return fmt.Errorf("language has no grammar system")
 	}
@@ -197,6 +203,9 @@ func ApplyGrammaticalAdaptation(lang *Language, adaptation GrammaticalAdaptation
 
 // ApplyMorphologicalAdaptation applies actual morphological changes to a language.
 func ApplyMorphologicalAdaptation(lang *Language, adaptation MorphologicalAdaptation, sourceLang *Language, seed int64) error {
+	if lang == nil {
+		return fmt.Errorf("language cannot be nil")
+	}
 	if lang.Morphology == nil {
 		return fmt.Errorf("language has no morphology system")
 	}

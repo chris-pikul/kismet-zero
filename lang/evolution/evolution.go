@@ -9,17 +9,18 @@ import (
 )
 
 // EvolutionEngine is the main orchestrator for language evolution.
-// It coordinates sound changes, morphological changes, orthographic changes, contact influence, cultural influence, and dialect formation.
+// It coordinates sound changes, morphological changes, orthographic changes, contact influence, cultural influence, dialect formation, and linguistic adaptations.
 type EvolutionEngine struct {
-	soundChangeEngine       *SoundChangeEngine
-	morphologyEngine        *MorphologicalEvolutionEngine
-	orthographyEngine       *OrthographicEvolutionEngine
-	contactEngine           *ContactEvolutionEngine
-	culturalInfluenceEngine *CulturalInfluenceEngine
-	dialectFormationEngine  *DialectFormationEngine
-	familyTree              *LanguageFamilyTree
-	config                  EvolutionConfig
-	rng                     *rand.Rand
+	soundChangeEngine          *SoundChangeEngine
+	morphologyEngine           *MorphologicalEvolutionEngine
+	orthographyEngine          *OrthographicEvolutionEngine
+	contactEngine              *ContactEvolutionEngine
+	culturalInfluenceEngine    *CulturalInfluenceEngine
+	dialectFormationEngine     *DialectFormationEngine
+	linguisticAdaptationEngine *LinguisticAdaptationEngine
+	familyTree                 *LanguageFamilyTree
+	config                     EvolutionConfig
+	rng                        *rand.Rand
 }
 
 // NewEvolutionEngine creates a new evolution engine with the given configuration.
@@ -27,15 +28,16 @@ func NewEvolutionEngine(config EvolutionConfig) *EvolutionEngine {
 	rng := rand.New(rand.NewPCG(uint64(config.Seed), 0))
 
 	return &EvolutionEngine{
-		soundChangeEngine:       NewSoundChangeEngine(config),
-		morphologyEngine:        NewMorphologicalEvolutionEngine(config),
-		orthographyEngine:       NewOrthographicEvolutionEngine(config),
-		contactEngine:           NewContactEvolutionEngine(config),
-		culturalInfluenceEngine: NewCulturalInfluenceEngine(config),
-		dialectFormationEngine:  NewDialectFormationEngine(config),
-		familyTree:              NewLanguageFamilyTree(config),
-		config:                  config,
-		rng:                     rng,
+		soundChangeEngine:          NewSoundChangeEngine(config),
+		morphologyEngine:           NewMorphologicalEvolutionEngine(config),
+		orthographyEngine:          NewOrthographicEvolutionEngine(config),
+		contactEngine:              NewContactEvolutionEngine(config),
+		culturalInfluenceEngine:    NewCulturalInfluenceEngine(config),
+		dialectFormationEngine:     NewDialectFormationEngine(config),
+		linguisticAdaptationEngine: NewLinguisticAdaptationEngine(config),
+		familyTree:                 NewLanguageFamilyTree(config),
+		config:                     config,
+		rng:                        rng,
 	}
 }
 
@@ -148,6 +150,56 @@ func (ee *EvolutionEngine) EvolveLanguage(
 	return evolvedLang, evolutionEvent, nil
 }
 
+// ApplyLinguisticAdaptation applies a linguistic adaptation to a language.
+// This method provides access to the enhanced adaptation system for external use.
+func (ee *EvolutionEngine) ApplyLinguisticAdaptation(
+	lang *lang.Language,
+	adaptation *LinguisticAdaptation,
+) (*LinguisticChange, error) {
+	if ee.linguisticAdaptationEngine == nil {
+		return nil, fmt.Errorf("linguistic adaptation engine not initialized")
+	}
+
+	switch adaptation.Type {
+	case "phonological":
+		return ee.linguisticAdaptationEngine.ApplyPhonologicalAdaptation(lang, adaptation.PhonologicalChange)
+	case "grammatical":
+		return ee.linguisticAdaptationEngine.ApplyGrammaticalAdaptation(lang, adaptation.GrammaticalChange)
+	case "morphological":
+		return ee.linguisticAdaptationEngine.ApplyMorphologicalAdaptation(lang, adaptation.MorphologicalChange)
+	default:
+		return nil, fmt.Errorf("unknown adaptation type: %s", adaptation.Type)
+	}
+}
+
+// ApplyBorrowingPattern applies a borrowing pattern to a language.
+// This method integrates the cultural borrowing system with the evolution engine.
+func (ee *EvolutionEngine) ApplyBorrowingPattern(
+	lang *lang.Language,
+	pattern *BorrowingPattern,
+	source string,
+	contactType string,
+) (*LinguisticChange, error) {
+	if ee.linguisticAdaptationEngine == nil {
+		return nil, fmt.Errorf("linguistic adaptation engine not initialized")
+	}
+
+	return ee.linguisticAdaptationEngine.ApplyBorrowingPattern(lang, pattern, source, contactType)
+}
+
+// GenerateRandomAdaptation generates a random linguistic adaptation.
+// This method provides access to the adaptation generation system.
+func (ee *EvolutionEngine) GenerateRandomAdaptation(
+	lang *lang.Language,
+	adaptationType string,
+) (*LinguisticAdaptation, error) {
+	if ee.linguisticAdaptationEngine == nil {
+		return nil, fmt.Errorf("linguistic adaptation engine not initialized")
+	}
+
+	return ee.linguisticAdaptationEngine.GenerateRandomAdaptation(lang, adaptationType)
+}
+
 // EvolveLanguageFromContact evolves a language through contact with another language.
 // This simulates how languages influence each other through cultural interaction.
 func (ee *EvolutionEngine) EvolveLanguageFromContact(
@@ -165,14 +217,18 @@ func (ee *EvolutionEngine) EvolveLanguageFromContact(
 	// Create a copy of the target language
 	evolvedLang := ee.cloneLanguage(targetLang)
 
-	// Simulate contact and get changes
-	contactChanges, contactEvent := ee.contactEngine.SimulateContact(
+	// Simulate contact using the new enhanced adaptation system
+	contactChanges, contactEvent, err := ee.contactEngine.SimulateContactWithAdaptation(
 		sourceLang,
 		evolvedLang,
 		contactType,
 		intensity,
 		duration,
+		ee.linguisticAdaptationEngine,
 	)
+	if err != nil {
+		return nil, EvolutionEvent{}, fmt.Errorf("failed to simulate contact with adaptation: %w", err)
+	}
 
 	// Apply the contact changes
 	// Note: In a full implementation, these changes would actually modify the language
@@ -212,7 +268,7 @@ func (ee *EvolutionEngine) EvolveLanguageFromContact(
 	}
 
 	// Record events
-	err := ee.familyTree.AddEvolutionEvent(targetLang.ID.String(), evolutionEvent)
+	err = ee.familyTree.AddEvolutionEvent(targetLang.ID.String(), evolutionEvent)
 	if err != nil {
 		return nil, EvolutionEvent{}, fmt.Errorf("failed to record evolution event: %w", err)
 	}
@@ -282,23 +338,37 @@ func (ee *EvolutionEngine) CreateChildLanguage(
 }
 
 // applyNaturalEvolution applies natural, internal changes to a language.
+// This method now uses the enhanced LinguisticAdaptationEngine for sophisticated evolution.
 func (ee *EvolutionEngine) applyNaturalEvolution(language *lang.Language, era string) []LinguisticChange {
 	var changes []LinguisticChange
 
-	// Apply natural changes based on configuration
+	// Apply natural changes based on configuration using the adaptation engine
 	if ee.rng.Float32() < ee.config.NaturalChangeRate {
-		change := &LinguisticChange{
-			ID:          fmt.Sprintf("natural_change_%d", time.Now().UnixNano()),
-			Type:        ChangeTypeMorphological,
-			Direction:   ChangeDirectionModifying,
-			Description: "Natural internal evolution",
-			Details:     "Gradual internal changes over time",
-			Timestamp:   time.Now(),
-			Era:         era,
-			Trigger:     "natural_evolution",
-			Intensity:   0.3,
+		// Generate a random adaptation for natural evolution
+		adaptation, err := ee.linguisticAdaptationEngine.GenerateRandomAdaptation(language, "phonological")
+		if err == nil && adaptation != nil {
+			// Apply the adaptation
+			change, err := ee.linguisticAdaptationEngine.ApplyPhonologicalAdaptation(language, adaptation.PhonologicalChange)
+			if err == nil && change != nil {
+				changes = append(changes, *change)
+			}
 		}
-		changes = append(changes, *change)
+
+		// If no adaptation was generated or applied, create a basic natural change
+		if len(changes) == 0 {
+			change := &LinguisticChange{
+				ID:          fmt.Sprintf("natural_change_%d", time.Now().UnixNano()),
+				Type:        ChangeTypeMorphological,
+				Direction:   ChangeDirectionModifying,
+				Description: "Natural internal evolution",
+				Details:     "Gradual internal changes over time",
+				Timestamp:   time.Now(),
+				Era:         era,
+				Trigger:     "natural_evolution",
+				Intensity:   0.3,
+			}
+			changes = append(changes, *change)
+		}
 	}
 
 	return changes

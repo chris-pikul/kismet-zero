@@ -318,7 +318,7 @@ func TestGeographicInfluenceIntegration(t *testing.T) {
 		}
 
 		// Verify geographic influence changes were applied
-		geographicChanges := dialect.GetLinguisticChanges(LinguisticChangeTypeDialectal)
+		geographicChanges := dialect.GetLinguisticChangesByType(LinguisticChangeTypeDialectal)
 		if len(geographicChanges) < 7 { // 6 geographic + 1 formation
 			t.Errorf("Expected at least 7 dialect changes, got %d", len(geographicChanges))
 		}

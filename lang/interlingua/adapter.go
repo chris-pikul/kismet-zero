@@ -1,41 +1,37 @@
-package lang
-
-import (
-	"github.com/chris-pikul/kismet-zero/lang/interlingua"
-)
+package interlingua
 
 // InterlinguaServices provides access to interlingua realizers and analyzers for a language.
 type InterlinguaServices struct {
-	Realizers map[string]interlingua.Realizer // "en","fr",...
-	Analyzers map[string]interlingua.Analyzer
+	Realizers map[string]Realizer // "en","fr",...
+	Analyzers map[string]Analyzer
 }
 
 // NewInterlinguaServices creates a new interlingua services container.
 func NewInterlinguaServices() *InterlinguaServices {
 	return &InterlinguaServices{
-		Realizers: make(map[string]interlingua.Realizer),
-		Analyzers: make(map[string]interlingua.Analyzer),
+		Realizers: make(map[string]Realizer),
+		Analyzers: make(map[string]Analyzer),
 	}
 }
 
 // AddRealizer adds a realizer for a specific language code.
-func (is *InterlinguaServices) AddRealizer(langCode string, realizer interlingua.Realizer) {
+func (is *InterlinguaServices) AddRealizer(langCode string, realizer Realizer) {
 	is.Realizers[langCode] = realizer
 }
 
 // AddAnalyzer adds an analyzer for a specific language code.
-func (is *InterlinguaServices) AddAnalyzer(langCode string, analyzer interlingua.Analyzer) {
+func (is *InterlinguaServices) AddAnalyzer(langCode string, analyzer Analyzer) {
 	is.Analyzers[langCode] = analyzer
 }
 
 // GetRealizer returns a realizer for the specified language code.
-func (is *InterlinguaServices) GetRealizer(langCode string) (interlingua.Realizer, bool) {
+func (is *InterlinguaServices) GetRealizer(langCode string) (Realizer, bool) {
 	realizer, exists := is.Realizers[langCode]
 	return realizer, exists
 }
 
 // GetAnalyzer returns an analyzer for the specified language code.
-func (is *InterlinguaServices) GetAnalyzer(langCode string) (interlingua.Analyzer, bool) {
+func (is *InterlinguaServices) GetAnalyzer(langCode string) (Analyzer, bool) {
 	analyzer, exists := is.Analyzers[langCode]
 	return analyzer, exists
 }

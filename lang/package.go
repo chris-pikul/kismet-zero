@@ -9,6 +9,10 @@
 //   - orthography: writing system mappings and styles
 //   - morphology: word formation and lexicon generation
 //   - grammar: sentence structure and agreement systems
+//   - evolution: language change and diachronic evolution
+//   - cultural: cultural influence and contact modeling
+//   - variation: dialect formation and language variation
+//   - interlingua: semantic analysis and generation
 //
 // Core Responsibilities:
 //   - Define the Language struct that integrates all linguistic components

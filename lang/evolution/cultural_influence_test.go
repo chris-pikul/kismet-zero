@@ -491,3 +491,183 @@ func TestCulturalInfluenceEngine_ContactTypeIntensities(t *testing.T) {
 		}
 	}
 }
+
+// TestSimulateOrthographicInfluence tests the orthographic influence simulation.
+func TestSimulateOrthographicInfluence(t *testing.T) {
+	config := DefaultEvolutionConfig(42)
+	engine := NewCulturalInfluenceEngine(config)
+
+	// Create test languages
+	sourceLang, err := lang.CreateRandomLanguage("source", "ancient", 42)
+	if err != nil {
+		t.Fatalf("Failed to create source language: %v", err)
+	}
+
+	targetLang, err := lang.CreateRandomLanguage("target", "ancient", 43)
+	if err != nil {
+		t.Fatalf("Failed to create target language: %v", err)
+	}
+
+	compatibility := CulturalCompatibility{
+		LinguisticSimilarity: 0.7,
+		CulturalValues:       0.6,
+		GeographicProximity:  0.5,
+	}
+
+	// Test with different contact types and intensity levels
+	testCases := []struct {
+		contactType CulturalContactType
+		intensity   float32
+		name        string
+	}{
+		{CulturalContactTypeTrade, 0.3, "trade_low_intensity"},
+		{CulturalContactTypeConquest, 0.7, "conquest_medium_intensity"},
+		{CulturalContactTypeColonization, 0.9, "colonization_high_intensity"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			changes := engine.simulateOrthographicInfluence(sourceLang, targetLang, tc.intensity, tc.contactType, compatibility)
+
+			// The function should return changes (even if empty)
+			if changes == nil {
+				t.Logf("No orthographic influence changes for contact type %s and intensity %f (this is expected behavior)", tc.contactType.String(), tc.intensity)
+			} else {
+				t.Logf("Applied orthographic influence changes for contact type %s and intensity %f: %v", tc.contactType.String(), tc.intensity, changes)
+
+				// Verify the changes have the expected properties
+				for _, change := range changes {
+					if change.Type != ChangeTypeOrthographic {
+						t.Errorf("Expected change type ChangeTypeOrthographic, got %s", change.Type.String())
+					}
+					if change.Era != "cultural_influence" {
+						t.Errorf("Expected era 'cultural_influence', got %s", change.Era)
+					}
+					if change.CultureInfluence != sourceLang.Culture {
+						t.Errorf("Expected culture influence %s, got %s", sourceLang.Culture, change.CultureInfluence)
+					}
+				}
+			}
+		})
+	}
+}
+
+// TestSimulatePhonologicalInfluence tests the phonological influence simulation.
+func TestSimulatePhonologicalInfluence(t *testing.T) {
+	config := DefaultEvolutionConfig(42)
+	engine := NewCulturalInfluenceEngine(config)
+
+	// Create test languages
+	sourceLang, err := lang.CreateRandomLanguage("source", "ancient", 42)
+	if err != nil {
+		t.Fatalf("Failed to create source language: %v", err)
+	}
+
+	targetLang, err := lang.CreateRandomLanguage("target", "ancient", 43)
+	if err != nil {
+		t.Fatalf("Failed to create target language: %v", err)
+	}
+
+	compatibility := CulturalCompatibility{
+		LinguisticSimilarity: 0.7,
+		CulturalValues:       0.6,
+		GeographicProximity:  0.5,
+	}
+
+	// Test with different contact types and intensity levels
+	testCases := []struct {
+		contactType CulturalContactType
+		intensity   float32
+		name        string
+	}{
+		{CulturalContactTypeTrade, 0.3, "trade_low_intensity"},
+		{CulturalContactTypeConquest, 0.7, "conquest_medium_intensity"},
+		{CulturalContactTypeReligious, 0.9, "religious_high_intensity"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			changes := engine.simulatePhonologicalInfluence(sourceLang, targetLang, tc.intensity, compatibility)
+
+			// The function should return changes (even if empty)
+			if changes == nil {
+				t.Logf("No phonological influence changes for contact type %s and intensity %f (this is expected behavior)", tc.contactType.String(), tc.intensity)
+			} else {
+				t.Logf("Applied phonological influence changes for contact type %s and intensity %f: %v", tc.contactType.String(), tc.intensity, changes)
+
+				// Verify the changes have the expected properties
+				for _, change := range changes {
+					if change.Type != ChangeTypeSoundShift {
+						t.Errorf("Expected change type ChangeTypeSoundShift, got %s", change.Type.String())
+					}
+					if change.Era != "cultural_influence" {
+						t.Errorf("Expected era 'cultural_influence', got %s", change.Era)
+					}
+					if change.CultureInfluence != sourceLang.Culture {
+						t.Errorf("Expected culture influence %s, got %s", sourceLang.Culture, change.CultureInfluence)
+					}
+				}
+			}
+		})
+	}
+}
+
+// TestSimulateGrammaticalInfluence tests the grammatical influence simulation.
+func TestSimulateGrammaticalInfluence(t *testing.T) {
+	config := DefaultEvolutionConfig(42)
+	engine := NewCulturalInfluenceEngine(config)
+
+	// Create test languages
+	sourceLang, err := lang.CreateRandomLanguage("source", "ancient", 42)
+	if err != nil {
+		t.Fatalf("Failed to create source language: %v", err)
+	}
+
+	targetLang, err := lang.CreateRandomLanguage("target", "ancient", 43)
+	if err != nil {
+		t.Fatalf("Failed to create target language: %v", err)
+	}
+
+	compatibility := CulturalCompatibility{
+		LinguisticSimilarity: 0.7,
+		CulturalValues:       0.6,
+		GeographicProximity:  0.5,
+	}
+
+	// Test with different contact types and intensity levels
+	testCases := []struct {
+		contactType CulturalContactType
+		intensity   float32
+		name        string
+	}{
+		{CulturalContactTypeTrade, 0.3, "trade_low_intensity"},
+		{CulturalContactTypeConquest, 0.7, "conquest_medium_intensity"},
+		{CulturalContactTypeReligious, 0.9, "religious_high_intensity"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			changes := engine.simulateGrammaticalInfluence(sourceLang, targetLang, tc.intensity, compatibility)
+
+			// The function should return changes (even if empty)
+			if changes == nil {
+				t.Logf("No grammatical influence changes for contact type %s and intensity %f (this is expected behavior)", tc.contactType.String(), tc.intensity)
+			} else {
+				t.Logf("Applied grammatical influence changes for contact type %s and intensity %f: %v", tc.contactType.String(), tc.intensity, changes)
+
+				// Verify the changes have the expected properties
+				for _, change := range changes {
+					if change.Type != ChangeTypeMorphological {
+						t.Errorf("Expected change type ChangeTypeMorphological, got %s", change.Type.String())
+					}
+					if change.Era != "cultural_influence" {
+						t.Errorf("Expected era 'cultural_influence', got %s", change.Era)
+					}
+					if change.CultureInfluence != sourceLang.Culture {
+						t.Errorf("Expected culture influence %s, got %s", sourceLang.Culture, change.CultureInfluence)
+					}
+				}
+			}
+		})
+	}
+}

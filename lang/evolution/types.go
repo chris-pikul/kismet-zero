@@ -4,6 +4,10 @@ import (
 	"time"
 
 	"github.com/chris-pikul/kismet-zero/lang"
+	"github.com/chris-pikul/kismet-zero/lang/grammar"
+	"github.com/chris-pikul/kismet-zero/lang/morphology"
+	"github.com/chris-pikul/kismet-zero/lang/phoneme"
+	"github.com/chris-pikul/kismet-zero/lang/phonology"
 )
 
 // ChangeType represents the category of linguistic change that occurred.
@@ -87,6 +91,97 @@ type LinguisticChange struct {
 	// Cultural context
 	CultureInfluence string  `json:"cultureInfluence,omitempty"`
 	Intensity        float32 `json:"intensity"` // 0.0 to 1.0, strength of change
+}
+
+// LinguisticAdaptation represents an actual structural change to a language.
+// This is an enhanced version that provides detailed tracking of specific changes.
+type LinguisticAdaptation struct {
+	ID          string `json:"id"`
+	Type        string `json:"type"` // "phonological", "grammatical", "morphological"
+	Description string `json:"description"`
+	Details     string `json:"details,omitempty"`
+
+	// Change-specific data
+	PhonologicalChange  *PhonologicalAdaptation  `json:"phonologicalChange,omitempty"`
+	GrammaticalChange   *GrammaticalAdaptation   `json:"grammaticalChange,omitempty"`
+	MorphologicalChange *MorphologicalAdaptation `json:"morphologicalChange,omitempty"`
+
+	// Impact tracking
+	ComplexityChange float32   `json:"complexityChange"`
+	Timestamp        time.Time `json:"timestamp"`
+	Source           string    `json:"source"` // Which language/culture influenced this change
+	ContactType      string    `json:"contactType"`
+}
+
+// PhonologicalAdaptation represents a specific phonological change to a language.
+type PhonologicalAdaptation struct {
+	ID          string `json:"id"`
+	Type        string `json:"type"` // "phoneme_addition", "phoneme_modification", "phonotactic_change"
+	Description string `json:"description"`
+
+	// Phoneme changes
+	AddedPhonemes    []phoneme.Phoneme `json:"addedPhonemes,omitempty"`
+	ModifiedPhonemes []phoneme.Phoneme `json:"modifiedPhonemes,omitempty"`
+	RemovedPhonemes  []string          `json:"removedPhonemes,omitempty"`
+
+	// Phonotactic changes
+	NewSyllableTemplates []phonology.SyllableTemplate `json:"newSyllableTemplates,omitempty"`
+	ModifiedTemplates    []phonology.SyllableTemplate `json:"modifiedTemplates,omitempty"`
+
+	// Context and constraints
+	Context     string  `json:"context,omitempty"` // "word_initial", "intervocalic", "word_final"
+	Probability float32 `json:"probability"`       // How likely this change is to occur
+	Intensity   float32 `json:"intensity"`         // How strong the change is
+}
+
+// GrammaticalAdaptation represents a specific grammatical change to a language.
+type GrammaticalAdaptation struct {
+	ID          string `json:"id"`
+	Type        string `json:"type"` // "morphology_addition", "syntax_change", "agreement_modification"
+	Description string `json:"description"`
+
+	// Morphological changes
+	NewCases   []grammar.Case   `json:"newCases,omitempty"`
+	NewNumbers []grammar.Number `json:"newNumbers,omitempty"`
+	NewGenders []grammar.Gender `json:"newGenders,omitempty"`
+	NewTenses  []grammar.Tense  `json:"newTenses,omitempty"`
+	NewAspects []grammar.Aspect `json:"newAspects,omitempty"`
+	NewMoods   []grammar.Mood   `json:"newMoods,omitempty"`
+
+	// Syntax changes
+	NewWordOrders []grammar.WordOrder `json:"newWordOrders,omitempty"`
+	NewParticles  []string            `json:"newParticles,omitempty"`
+
+	// Agreement changes
+	ModifiedAgreement []grammar.AgreementRule `json:"modifiedAgreement,omitempty"`
+
+	// Context and constraints
+	Category    string  `json:"category"`    // "noun", "verb", "adjective", "particle"
+	Feature     string  `json:"feature"`     // "case", "tense", "aspect", "mood"
+	Probability float32 `json:"probability"` // How likely this change is to occur
+	Intensity   float32 `json:"intensity"`   // How strong the change is
+}
+
+// MorphologicalAdaptation represents a specific morphological change to a language.
+type MorphologicalAdaptation struct {
+	ID          string `json:"id"`
+	Type        string `json:"type"` // "morpheme_addition", "morpheme_modification", "paradigm_change"
+	Description string `json:"description"`
+
+	// Morpheme changes
+	NewMorphemes      []morphology.Morpheme `json:"newMorphemes,omitempty"`
+	ModifiedMorphemes []morphology.Morpheme `json:"modifiedMorphemes,omitempty"`
+	RemovedMorphemes  []string              `json:"removedMorphemes,omitempty"`
+
+	// Paradigm changes - simplified for now
+	NewParadigms      []string `json:"newParadigms,omitempty"`
+	ModifiedParadigms []string `json:"modifiedParadigms,omitempty"`
+
+	// Context and constraints
+	Category    string  `json:"category"`    // "noun", "verb", "adjective"
+	Feature     string  `json:"feature"`     // "inflection", "derivation", "agreement"
+	Probability float32 `json:"probability"` // How likely this change is to occur
+	Intensity   float32 `json:"intensity"`   // How strong the change is
 }
 
 // EvolutionEvent represents a collection of related changes that occurred together.

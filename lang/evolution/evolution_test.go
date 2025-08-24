@@ -357,3 +357,166 @@ func createTestLanguage(name, culture string) *lang.Language {
 
 	return language
 }
+
+// TestEvolutionEngineNewMethods tests the new methods added during refactoring
+func TestEvolutionEngineNewMethods(t *testing.T) {
+	config := DefaultEvolutionConfig(42)
+	engine := NewEvolutionEngine(config)
+
+	// Test ApplyLinguisticAdaptation
+	testLang := CreateTestLanguage("TestLang", "TestCulture")
+
+	// Create a test adaptation
+	adaptation := &LinguisticAdaptation{
+		ID:          "test_adaptation",
+		Type:        "phonological",
+		Description: "Test adaptation",
+		PhonologicalChange: &PhonologicalAdaptation{
+			ID:          "test_phonological",
+			Type:        "phoneme_addition",
+			Description: "Test phonological change",
+		},
+	}
+
+	change, err := engine.ApplyLinguisticAdaptation(testLang, adaptation)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if change == nil {
+		t.Error("Expected change to be returned")
+	}
+
+	// Test ApplyBorrowingPattern
+	borrowingPattern := &BorrowingPattern{
+		SelectiveAdoption:     0.6,
+		AdaptationStrength:    0.7,
+		IntegrationDepth:      0.5,
+		ResistanceLevel:       0.4,
+		PrestigeSensitivity:   0.8,
+		HybridizationTendency: 0.3,
+	}
+
+	borrowingChange, err := engine.ApplyBorrowingPattern(testLang, borrowingPattern, "Source Language", "trade")
+	if err != nil {
+		t.Fatalf("Failed to apply borrowing pattern: %v", err)
+	}
+	if borrowingChange == nil {
+		t.Error("Expected borrowing change to be returned")
+	}
+
+	// Test GenerateRandomAdaptation
+	randomAdaptation, err := engine.GenerateRandomAdaptation(testLang, "phonological")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if randomAdaptation == nil {
+		t.Error("Expected random adaptation to be returned")
+	}
+	if randomAdaptation.Type != "phonological" {
+		t.Errorf("Expected type 'phonological', got '%s'", randomAdaptation.Type)
+	}
+}
+
+// TestEvolutionEngineGetMethods tests the getter methods
+func TestEvolutionEngineGetMethods(t *testing.T) {
+	config := DefaultEvolutionConfig(42)
+	engine := NewEvolutionEngine(config)
+
+	// Create a test language for the history tests
+	testLang := CreateTestLanguage("TestLang", "TestCulture")
+
+	// Add the language to the family tree first
+	err := engine.GetFamilyTree().AddLanguage(testLang, nil)
+	if err != nil {
+		t.Fatalf("Failed to add language to family tree: %v", err)
+	}
+
+	// Test GetEvolutionHistory
+	history, err := engine.GetEvolutionHistory(testLang.ID.String())
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if history == nil {
+		t.Error("Expected evolution history to be returned")
+	}
+
+	// Test GetContactHistory
+	contactHistory, err := engine.GetContactHistory(testLang.ID.String())
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if contactHistory == nil {
+		t.Error("Expected contact history to be returned")
+	}
+
+	// Test GetCulturalInfluenceEngine
+	culturalEngine := engine.GetCulturalInfluenceEngine()
+	if culturalEngine == nil {
+		t.Error("Expected cultural influence engine to be returned")
+	}
+
+	// Test GetDialectFormationEngine
+	dialectEngine := engine.GetDialectFormationEngine()
+	if dialectEngine == nil {
+		t.Error("Expected dialect formation engine to be returned")
+	}
+}
+
+// TestEvolutionEngineDialectMethods tests the dialect-related methods
+func TestEvolutionEngineDialectMethods(t *testing.T) {
+	config := DefaultEvolutionConfig(42)
+	engine := NewEvolutionEngine(config)
+
+	// Test CreateGeographicDialect
+	testLang := CreateTestLanguage("TestLang", "TestCulture")
+
+	// Add the language to the family tree first
+	err := engine.GetFamilyTree().AddLanguage(testLang, nil)
+	if err != nil {
+		t.Fatalf("Failed to add language to family tree: %v", err)
+	}
+
+	region := GeographicRegion{
+		ID:           "test_region",
+		Name:         "Test Region",
+		Latitude:     0.0,
+		Longitude:    0.0,
+		Urbanization: 0.5,
+		Population:   1000,
+	}
+
+	dialect, event, err := engine.CreateGeographicDialect(testLang, "test_dialect", "Test Dialect", region, "test_era")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if dialect == nil {
+		t.Error("Expected dialect to be created")
+	}
+	if event.ID == "" {
+		t.Error("Expected event ID to be set")
+	}
+
+	// Test CreateSocialDialect
+	socialDialect, socialEvent, err := engine.CreateSocialDialect(testLang, "social_dialect", "Social Dialect", "middle_class", 0.7, "test_era")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if socialDialect == nil {
+		t.Error("Expected social dialect to be created")
+	}
+	if socialEvent.ID == "" {
+		t.Error("Expected social event ID to be set")
+	}
+
+	// Test EvolveDialect
+	evolvedDialect, evolutionEvent, err := engine.EvolveDialect(dialect, "test_era", 100*time.Hour)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if evolvedDialect == nil {
+		t.Error("Expected evolved dialect to be returned")
+	}
+	if evolutionEvent.ID == "" {
+		t.Error("Expected evolution event ID to be set")
+	}
+}

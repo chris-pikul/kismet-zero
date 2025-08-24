@@ -2,7 +2,6 @@ package evolution
 
 import (
 	"fmt"
-	"math/rand/v2"
 	"time"
 
 	"github.com/chris-pikul/kismet-zero/lang/grammar"
@@ -62,17 +61,13 @@ type MorphologicalChange struct {
 
 // MorphologicalEvolutionEngine manages morphological changes in a language.
 type MorphologicalEvolutionEngine struct {
-	rng    *rand.Rand
-	config EvolutionConfig
+	BaseEngine
 }
 
 // NewMorphologicalEvolutionEngine creates a new morphological evolution engine.
 func NewMorphologicalEvolutionEngine(config EvolutionConfig) *MorphologicalEvolutionEngine {
-	rng := rand.New(rand.NewPCG(uint64(config.Seed), 0))
-
 	return &MorphologicalEvolutionEngine{
-		rng:    rng,
-		config: config,
+		BaseEngine: NewBaseEngine(config),
 	}
 }
 
@@ -86,19 +81,19 @@ func (mee *MorphologicalEvolutionEngine) ApplyMorphologicalChanges(
 	changes := make([]MorphologicalChange, 0)
 
 	// Apply simplification changes
-	if mee.rng.Float32() < mee.config.MorphologyChangeRate {
+	if mee.GetRandomFloat32() < mee.GetConfig().MorphologyChangeRate {
 		simplificationChanges := mee.applySimplificationChanges(morphemeList, grammar, era)
 		changes = append(changes, simplificationChanges...)
 	}
 
 	// Apply regularization changes
-	if mee.rng.Float32() < mee.config.MorphologyChangeRate*0.7 {
+	if mee.GetRandomFloat32() < mee.GetConfig().MorphologyChangeRate*0.7 {
 		regularizationChanges := mee.applyRegularizationChanges(morphemeList, grammar, era)
 		changes = append(changes, regularizationChanges...)
 	}
 
 	// Apply innovation changes (less common)
-	if mee.rng.Float32() < mee.config.MorphologyChangeRate*0.3 {
+	if mee.GetRandomFloat32() < mee.GetConfig().MorphologyChangeRate*0.3 {
 		innovationChanges := mee.applyInnovationChanges(morphemeList, grammar, era)
 		changes = append(changes, innovationChanges...)
 	}
@@ -115,7 +110,7 @@ func (mee *MorphologicalEvolutionEngine) applySimplificationChanges(
 	var changes []MorphologicalChange
 
 	// Example: General morphological simplification
-	if mee.rng.Float32() < 0.4 {
+	if mee.GetRandomFloat32() < 0.4 {
 		change := &MorphologicalChange{
 			ID:               fmt.Sprintf("morphology_simplification_%d", time.Now().Unix()),
 			Type:             MorphologicalChangeTypeSimplification,
@@ -132,7 +127,7 @@ func (mee *MorphologicalEvolutionEngine) applySimplificationChanges(
 	}
 
 	// Example: Agreement system simplification
-	if mee.rng.Float32() < 0.3 {
+	if mee.GetRandomFloat32() < 0.3 {
 		change := &MorphologicalChange{
 			ID:               fmt.Sprintf("agreement_simplification_%d", time.Now().Unix()),
 			Type:             MorphologicalChangeTypeSimplification,
@@ -160,7 +155,7 @@ func (mee *MorphologicalEvolutionEngine) applyRegularizationChanges(
 	var changes []MorphologicalChange
 
 	// Example: Regularize irregular verb forms
-	if mee.rng.Float32() < 0.5 {
+	if mee.GetRandomFloat32() < 0.5 {
 		change := &MorphologicalChange{
 			ID:                fmt.Sprintf("verb_regularization_%d", time.Now().Unix()),
 			Type:              MorphologicalChangeTypeRegularization,
@@ -188,7 +183,7 @@ func (mee *MorphologicalEvolutionEngine) applyInnovationChanges(
 	var changes []MorphologicalChange
 
 	// Example: Introduce new aspect markers
-	if mee.rng.Float32() < 0.3 {
+	if mee.GetRandomFloat32() < 0.3 {
 		change := &MorphologicalChange{
 			ID:               fmt.Sprintf("aspect_innovation_%d", time.Now().Unix()),
 			Type:             MorphologicalChangeTypeInnovation,

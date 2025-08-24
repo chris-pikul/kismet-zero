@@ -38,7 +38,7 @@ func TestLinguisticAdaptationCreation(t *testing.T) {
 		}
 
 		// Check that linguistic changes were recorded
-		changes := lang.GetLinguisticChanges(LinguisticChangeTypeSound)
+		changes := lang.GetLinguisticChangesByType(LinguisticChangeTypeSound)
 		if len(changes) == 0 {
 			t.Error("Expected linguistic changes to be recorded")
 		}
@@ -75,7 +75,7 @@ func TestLinguisticAdaptationCreation(t *testing.T) {
 		}
 
 		// Check that linguistic changes were recorded
-		changes := lang.GetLinguisticChanges(LinguisticChangeTypeMorphological)
+		changes := lang.GetLinguisticChangesByType(LinguisticChangeTypeMorphological)
 		if len(changes) == 0 {
 			t.Error("Expected additional linguistic changes to be recorded")
 		}
@@ -115,7 +115,7 @@ func TestLinguisticAdaptationCreation(t *testing.T) {
 		}
 
 		// Check that linguistic changes were recorded
-		changes := lang.GetLinguisticChanges(LinguisticChangeTypeMorphological)
+		changes := lang.GetLinguisticChangesByType(LinguisticChangeTypeMorphological)
 		if len(changes) < 2 {
 			t.Error("Expected additional linguistic changes to be recorded")
 		}
@@ -227,7 +227,7 @@ func TestAdaptationIntegration(t *testing.T) {
 		}
 
 		// Check that linguistic changes were recorded in the language
-		changes := lang1.GetLinguisticChanges(LinguisticChangeTypeSound)
+		changes := lang1.GetLinguisticChangesByType(LinguisticChangeTypeSound)
 		if len(changes) == 0 {
 			t.Log("No linguistic changes recorded - this is acceptable due to probabilistic nature")
 		}
