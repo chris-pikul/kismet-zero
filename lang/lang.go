@@ -165,6 +165,9 @@ type Language struct {
 	ParentID  *LanguageID  `json:"parentId,omitempty"`
 	ChildIDs  []LanguageID `json:"childIds,omitempty"`
 
+	// Linguistic change tracking
+	LinguisticChanges []LinguisticChange `json:"linguisticChanges,omitempty"`
+
 	// Configuration and generation parameters
 	Seed int64      `json:"seed"`
 	RNG  *rand.Rand `json:"-"`
@@ -260,9 +263,25 @@ func (l *Language) Clone(newID LanguageID, newSeed int64) *Language {
 	clone.ParentID = &l.ID
 	clone.CreatedAt = time.Now()
 
-	// Note: Deep cloning of linguistic components would require
-	// implementing Clone() methods in each component package
-	// For now, we'll need to set them manually
+	// Copy linguistic components
+	if l.Phonology != nil {
+		clone.Phonology = l.Phonology
+	}
+	if l.Orthography != nil {
+		clone.Orthography = l.Orthography
+	}
+	if l.Morphology != nil {
+		clone.Morphology = l.Morphology
+	}
+	if l.Grammar != nil {
+		clone.Grammar = l.Grammar
+	}
+
+	// Copy linguistic changes
+	if l.LinguisticChanges != nil {
+		clone.LinguisticChanges = make([]LinguisticChange, len(l.LinguisticChanges))
+		copy(clone.LinguisticChanges, l.LinguisticChanges)
+	}
 
 	return clone
 }

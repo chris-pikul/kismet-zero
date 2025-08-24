@@ -7,7 +7,7 @@ import (
 
 // ExampleHighLevelAPI demonstrates how to use the high-level language generation API.
 func ExampleHighLevelAPI() {
-	fmt.Println("=== Kismet Language Generation API Example ===\n")
+	fmt.Println("=== Kismet Language Generation API Example ===")
 
 	// 1. Create a random language with cultural preferences
 	fmt.Println("1. Creating an Elvish language...")
@@ -137,7 +137,7 @@ func ExampleHighLevelAPI() {
 
 // ExampleQuickStart demonstrates the simplest way to use the API.
 func ExampleQuickStart() {
-	fmt.Println("=== Quick Start Example ===\n")
+	fmt.Println("=== Quick Start Example ===")
 
 	// Create a language in one line
 	lang, err := CreateRandomLanguage("orcish", "black_orc", 123)
@@ -164,7 +164,7 @@ func ExampleQuickStart() {
 
 // ExampleCulturalVariations shows how different cultures create different languages.
 func ExampleCulturalVariations() {
-	fmt.Println("=== Cultural Variations Example ===\n")
+	fmt.Println("=== Cultural Variations Example ===")
 
 	cultures := []string{"elvish", "dwarvish", "orcish", "human", "ancient"}
 
