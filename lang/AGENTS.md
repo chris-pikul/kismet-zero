@@ -45,6 +45,8 @@ for diachronic change and cross-cultural blending.
   • Supports consistency across world history and cultural interactions.
   • Root Language struct orchestrates all linguistic components.
   • LanguageID system enables hierarchical language classification.
+  • Interlingua package provides semantic analysis and generation capabilities for cross-linguistic processing.
+  • Future expansions should maintain interlingua integration for consistent semantic representation across generated languages.
 
 ## Package Structure (Suggested)
 phoneme/
@@ -78,6 +80,14 @@ evolution/
   • morphology.go — Evolution of forms over time
   • contact.go — Blending, borrowing, and loanwords
   • familytree.go — Track genealogical relationships between languages
+
+interlingua/
+  • types.go — Core interlingua data structures (Document, Entity, Event, TAM, Roles)
+  • analyze_en.go — English text analysis to interlingua representation
+  • realize_en.go — Interlingua to English text realization
+  • concepts.go — Concept resolution and semantic mapping
+  • trace.go — Analysis tracing and debugging support
+  • validate.go — Document validation and consistency checks
 
 root files
   • lang.go — Core Language struct, LanguageID (BCP-47 inspired), orchestration types

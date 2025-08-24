@@ -351,7 +351,7 @@ English realization: “The boy didn’t give the book to the girl yesterday.”
 Loss examples:
 - If target cannot realize evidentiality: add `{"severity":"loss","code":"feature.dropped.evidential","message":"English lacks evidential morphology"}`.
 
-## Implementation Roadmap (for later planning)
+## Implementation Roadmap
 
 1. `types.go`, `trace.go`, validators.
 2. Morphology/grammar emission hooks for conlangs.
