@@ -131,6 +131,7 @@ type ContactEvent struct {
 	PhonologicalBorrowing bool `json:"phonologicalBorrowing"`
 	LexicalBorrowing      bool `json:"lexicalBorrowing"`
 	GrammaticalInfluence  bool `json:"grammaticalInfluence"`
+	OrthographicBorrowing bool `json:"orthographicBorrowing"`
 
 	Description string `json:"description,omitempty"`
 }
@@ -146,6 +147,10 @@ type EvolutionConfig struct {
 	ContactInfluenceRate float32 `json:"contactInfluenceRate"` // Base rate of contact influence
 	BorrowingThreshold   float32 `json:"borrowingThreshold"`   // Minimum intensity for borrowing
 	AdaptationStrength   float32 `json:"adaptationStrength"`   // How strongly borrowed features adapt
+
+	// Orthographic evolution parameters
+	OrthographyChangeRate float32 `json:"orthographyChangeRate"` // Rate of orthographic evolution
+	ScriptReformRate      float32 `json:"scriptReformRate"`      // Rate of script reforms
 
 	// Cultural parameters
 	CulturalInfluenceWeight float32       `json:"culturalInfluenceWeight"` // Weight of cultural factors
@@ -164,6 +169,8 @@ func DefaultEvolutionConfig(seed int64) EvolutionConfig {
 		ContactInfluenceRate:    0.25,
 		BorrowingThreshold:      0.3,
 		AdaptationStrength:      0.6,
+		OrthographyChangeRate:   0.15,
+		ScriptReformRate:        0.1,
 		CulturalInfluenceWeight: 0.4,
 		EraDuration:             time.Hour * 24 * 365 * 100, // 100 years
 		Seed:                    seed,

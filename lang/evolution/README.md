@@ -25,13 +25,29 @@ This package simulates how real languages evolve over time, either naturally wit
 - **Innovation** (introducing new grammatical features)
 - **Complexity tracking** and measurement
 
-### 3. Contact-Induced Change
+### 3. Orthographic Evolution
+- **Writing system changes** over time and through contact
+- **Script reforms**: spelling, character simplification, system-wide reforms
+- **Borrowing**: graphemes, mapping patterns, writing styles from other systems
+- **Phonological adaptation**: writing system updates to reflect sound changes
+- **Complexity tracking** and measurement for writing systems
+- **Writing System Family Trees**: genealogical relationships and evolution history
+
+### 4. Contact-Induced Change
 - **Multiple contact types**: trade, conquest, migration, cultural, religious, educational
-- **Borrowing hierarchy**: lexical (most common) → phonological → grammatical (least common)
+- **Borrowing hierarchy**: lexical (most common) → phonological → orthographic → grammatical (least common)
 - **Intensity-based influence** calculation
 - **Cultural context** and duration factors
 
-### 4. Language Family Tree
+### 4.5. Cultural Influence Modeling ⭐ **NEW**
+- **Sophisticated cultural compatibility** calculations
+- **Fantasy-focused contact types**: trade, conquest, migration, religious, magical, ancient
+- **Cultural identity factors**: prestige, innovation, preservation, magical tradition, religious influence
+- **Power dynamics** and cultural resistance modeling
+- **Selective borrowing patterns** with cultural adaptation
+- **Fantasy elements**: magical influence, ancient civilization effects, supernatural contact
+
+### 5. Language Family Tree
 - **Genealogical relationships** between languages
 - **Divergence tracking** and timing estimation
 - **Evolution history** recording
@@ -70,6 +86,29 @@ func main() {
     fmt.Printf("Language evolved: %s\n", evolvedLang.Name)
     fmt.Printf("Changes applied: %d\n", len(evolutionEvent.Changes))
 }
+
+### Orthographic Evolution
+
+```go
+// Apply orthographic changes to a writing system
+orthoEngine := evolution.NewOrthographicEvolutionEngine(config)
+
+// Apply natural orthographic evolution
+changes := orthoEngine.ApplyOrthographicChanges(
+    language.Orthography,
+    "middle_evolution",
+)
+
+// Generate a script reform
+reform := orthoEngine.GenerateOrthographicReform(
+    language.Orthography,
+    "spelling",
+    "reform_era",
+)
+
+// Calculate writing system complexity
+complexity := orthoEngine.CalculateOrthographicComplexity(language.Orthography)
+```
 ```
 
 ### Creating Child Languages
@@ -112,6 +151,8 @@ config := evolution.EvolutionConfig{
     NaturalChangeRate:     0.3,  // Probability of natural changes per era
     SoundShiftProbability: 0.4,  // Likelihood of sound changes
     MorphologyChangeRate:  0.2,  // Rate of morphological evolution
+    OrthographyChangeRate: 0.15, // Rate of orthographic evolution
+    ScriptReformRate:      0.1,  // Rate of script reforms
     ContactInfluenceRate:  0.25, // Base rate of contact influence
     BorrowingThreshold:    0.3,  // Minimum intensity for borrowing
     AdaptationStrength:    0.6,  // How strongly borrowed features adapt
@@ -134,6 +175,14 @@ config := evolution.EvolutionConfig{
 - **Phonological borrowing**: sound patterns and phonemes
 - **Grammatical influence**: syntax and morphology
 - **Cultural adaptation**: how borrowed features integrate
+
+### Cultural Influence Modeling ⭐ **NEW**
+- **Sophisticated cultural compatibility** calculations
+- **Fantasy-focused contact types**: trade, conquest, migration, religious, magical, ancient
+- **Cultural identity factors**: prestige, innovation, preservation, magical tradition, religious influence
+- **Power dynamics** and cultural resistance modeling
+- **Selective borrowing patterns** with cultural adaptation
+- **Fantasy elements**: magical influence, ancient civilization effects, supernatural contact
 
 ### Sound Changes
 - **Grimm's Law**: voiced stops → voiceless stops
@@ -159,6 +208,42 @@ commonAncestor, err := familyTree.GetCommonAncestor("germanic-old_english", "ger
 
 // Print the tree
 fmt.Println(familyTree.PrintFamilyTree())
+```
+
+## Writing System Family Trees
+
+The package also maintains genealogical relationships between writing systems:
+
+```go
+// Create a writing system family tree
+tree := evolution.NewWritingSystemFamilyTree(config)
+
+// Add writing systems with genealogical relationships
+tree.AddWritingSystem(protoWriting, nil, "origin")
+tree.AddWritingSystem(childWriting, protoWriting, "natural_evolution")
+tree.AddWritingSystem(siblingWriting, protoWriting, "style_evolution")
+
+// Navigate family relationships
+ancestors := tree.GetAncestors(childWriting.Name)
+descendants := tree.GetDescendants(protoWriting.Name)
+siblings := tree.GetSiblings(childWriting.Name)
+
+// Calculate similarity and divergence times
+similarity := tree.CalculateWritingSystemSimilarity(childWriting.Name, siblingWriting.Name)
+divergenceTime := tree.EstimateDivergenceTime(childWriting.Name, siblingWriting.Name)
+
+// Track evolution and borrowing history
+tree.AddEvolutionEvent(writingSystem.Name, evolutionChange)
+tree.AddBorrowingEvent(writingSystem.Name, borrowingEvent)
+
+// Generate new writing system lineages
+newLineage := tree.GenerateWritingSystemLineage(
+    parentWriting,
+    "Child-Name",
+    orthography.WritingStyleSyllabic,
+    evolutionEngine,
+    "modern_era",
+)
 ```
 
 ## Evolution Events
@@ -250,6 +335,9 @@ finalLang, _, err := engine.EvolveLanguage(branchLang, "modern", time.Hour*24*36
 ## Future Enhancements
 
 - **Orthographic evolution** (writing system changes)
+  - Writing system family trees and genealogy
+  - Cultural influence modeling through orthographic borrowing
+  - Advanced script reform simulation
 - **Semantic drift** (meaning changes over time)
 - **Dialect formation** (regional variation)
 - **Sociolinguistic factors** (social class, age, gender)

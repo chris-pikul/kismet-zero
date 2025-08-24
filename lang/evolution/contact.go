@@ -127,6 +127,13 @@ func (cee *ContactEvolutionEngine) SimulateContact(
 			changes = append(changes, grammaticalChanges...)
 			contactEvent.GrammaticalInfluence = true
 		}
+
+		// Orthographic borrowing (writing system features)
+		if cee.rng.Float32() < 0.15 && intensity > 0.7 {
+			orthographicChanges := cee.simulateOrthographicBorrowing(sourceLang, targetLang, intensity, contactType)
+			changes = append(changes, orthographicChanges...)
+			contactEvent.OrthographicBorrowing = true
+		}
 	}
 
 	return changes, contactEvent
@@ -260,4 +267,34 @@ func (cee *ContactEvolutionEngine) CalculateContactInfluence(
 	culturalSimilarity := float32(0.5) // Default neutral value
 
 	return baseInfluence * (0.7 + 0.3*durationFactor) * (0.8 + 0.2*culturalSimilarity)
+}
+
+// simulateOrthographicBorrowing simulates the borrowing of writing system features from one language to another.
+func (cee *ContactEvolutionEngine) simulateOrthographicBorrowing(
+	sourceLang *lang.Language,
+	targetLang *lang.Language,
+	intensity float32,
+	contactType ContactType,
+) []LinguisticChange {
+
+	var changes []LinguisticChange
+
+	// Orthographic borrowing is very selective and depends on writing system compatibility
+	if cee.rng.Float32() < intensity*0.3 {
+		change := &LinguisticChange{
+			ID:               fmt.Sprintf("orthographic_borrowing_%d", time.Now().UnixNano()),
+			Type:             ChangeTypeOrthographic,
+			Direction:        ChangeDirectionAdditive,
+			Description:      fmt.Sprintf("Adopted orthographic features from %s", sourceLang.Name),
+			Details:          "New writing system features or conventions",
+			Timestamp:        time.Now(),
+			Era:              "contact_evolution",
+			Trigger:          "orthographic_contact",
+			CultureInfluence: sourceLang.Culture,
+			Intensity:        intensity * 0.4,
+		}
+		changes = append(changes, *change)
+	}
+
+	return changes
 }

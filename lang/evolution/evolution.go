@@ -9,14 +9,16 @@ import (
 )
 
 // EvolutionEngine is the main orchestrator for language evolution.
-// It coordinates sound changes, morphological changes, and contact influence.
+// It coordinates sound changes, morphological changes, orthographic changes, contact influence, and cultural influence.
 type EvolutionEngine struct {
-	soundChangeEngine *SoundChangeEngine
-	morphologyEngine  *MorphologicalEvolutionEngine
-	contactEngine     *ContactEvolutionEngine
-	familyTree        *LanguageFamilyTree
-	config            EvolutionConfig
-	rng               *rand.Rand
+	soundChangeEngine       *SoundChangeEngine
+	morphologyEngine        *MorphologicalEvolutionEngine
+	orthographyEngine       *OrthographicEvolutionEngine
+	contactEngine           *ContactEvolutionEngine
+	culturalInfluenceEngine *CulturalInfluenceEngine
+	familyTree              *LanguageFamilyTree
+	config                  EvolutionConfig
+	rng                     *rand.Rand
 }
 
 // NewEvolutionEngine creates a new evolution engine with the given configuration.
@@ -24,12 +26,14 @@ func NewEvolutionEngine(config EvolutionConfig) *EvolutionEngine {
 	rng := rand.New(rand.NewPCG(uint64(config.Seed), 0))
 
 	return &EvolutionEngine{
-		soundChangeEngine: NewSoundChangeEngine(config),
-		morphologyEngine:  NewMorphologicalEvolutionEngine(config),
-		contactEngine:     NewContactEvolutionEngine(config),
-		familyTree:        NewLanguageFamilyTree(config),
-		config:            config,
-		rng:               rng,
+		soundChangeEngine:       NewSoundChangeEngine(config),
+		morphologyEngine:        NewMorphologicalEvolutionEngine(config),
+		orthographyEngine:       NewOrthographicEvolutionEngine(config),
+		contactEngine:           NewContactEvolutionEngine(config),
+		culturalInfluenceEngine: NewCulturalInfluenceEngine(config),
+		familyTree:              NewLanguageFamilyTree(config),
+		config:                  config,
+		rng:                     rng,
 	}
 }
 
@@ -81,6 +85,29 @@ func (ee *EvolutionEngine) EvolveLanguage(
 			Trigger:          morphChange.Trigger,
 			CultureInfluence: "",
 			Intensity:        morphChange.Intensity,
+		}
+		allChanges = append(allChanges, linguisticChange)
+	}
+
+	// Apply orthographic changes
+	orthographyChanges := ee.orthographyEngine.ApplyOrthographicChanges(
+		evolvedLang.Orthography,
+		era,
+	)
+
+	// Convert orthographic changes to linguistic changes
+	for _, orthoChange := range orthographyChanges {
+		linguisticChange := LinguisticChange{
+			ID:               orthoChange.ID,
+			Type:             ChangeTypeOrthographic,
+			Direction:        ChangeDirectionModifying,
+			Description:      orthoChange.Description,
+			Details:          orthoChange.Details,
+			Timestamp:        orthoChange.Timestamp,
+			Era:              orthoChange.Era,
+			Trigger:          orthoChange.Trigger,
+			CultureInfluence: "",
+			Intensity:        orthoChange.Intensity,
 		}
 		allChanges = append(allChanges, linguisticChange)
 	}
@@ -311,4 +338,62 @@ func (ee *EvolutionEngine) GetEvolutionHistory(languageID string) ([]EvolutionEv
 // GetContactHistory returns the contact history of a language.
 func (ee *EvolutionEngine) GetContactHistory(languageID string) ([]ContactEvent, error) {
 	return ee.familyTree.GetContactHistory(languageID)
+}
+
+// SimulateCulturalInfluence simulates cultural influence between two languages.
+// This method provides a high-level interface to the Cultural Influence Engine.
+func (ee *EvolutionEngine) SimulateCulturalInfluence(
+	sourceLang *lang.Language,
+	targetLang *lang.Language,
+	contactType CulturalContactType,
+	duration time.Duration,
+	sourceIdentity CulturalIdentity,
+	targetIdentity CulturalIdentity,
+) ([]LinguisticChange, CulturalInfluenceEvent, error) {
+
+	if sourceLang == nil || targetLang == nil {
+		return nil, CulturalInfluenceEvent{}, fmt.Errorf("both source and target languages must be provided")
+	}
+
+	// Use the cultural influence engine to simulate the influence
+	changes, event := ee.culturalInfluenceEngine.SimulateCulturalInfluence(
+		sourceLang,
+		targetLang,
+		contactType,
+		duration,
+		sourceIdentity,
+		targetIdentity,
+	)
+
+	// Record the cultural influence event in the family tree
+	if len(changes) > 0 {
+		// Create a contact event for the family tree
+		contactEvent := ContactEvent{
+			ID:                    event.ID,
+			Timestamp:             event.Timestamp,
+			SourceLang:            event.SourceCulture,
+			TargetLang:            event.TargetCulture,
+			Type:                  event.ContactType.String(),
+			Intensity:             event.Intensity,
+			Duration:              event.Duration,
+			Description:           event.Description,
+			LexicalBorrowing:      event.LexicalInfluence,
+			PhonologicalBorrowing: event.PhonologicalInfluence,
+			GrammaticalInfluence:  event.GrammaticalInfluence,
+			OrthographicBorrowing: event.OrthographicInfluence,
+		}
+
+		// Add to the family tree
+		err := ee.familyTree.AddContactEvent(targetLang.ID.String(), contactEvent)
+		if err != nil {
+			return changes, event, fmt.Errorf("failed to record cultural influence in family tree: %w", err)
+		}
+	}
+
+	return changes, event, nil
+}
+
+// GetCulturalInfluenceEngine returns the cultural influence engine for direct access.
+func (ee *EvolutionEngine) GetCulturalInfluenceEngine() *CulturalInfluenceEngine {
+	return ee.culturalInfluenceEngine
 }
