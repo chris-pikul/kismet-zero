@@ -72,13 +72,11 @@ func TestMorphologicalEvolutionIntegration(t *testing.T) {
 
 // TestMorphologicalChangeTypes tests the morphological change type system.
 func TestMorphologicalChangeTypes(t *testing.T) {
-	// Test that morphological change types are properly defined
+	// Test all change types
 	changeTypes := []MorphologicalChangeType{
 		MorphologicalChangeTypeSimplification,
 		MorphologicalChangeTypeRegularization,
 		MorphologicalChangeTypeInnovation,
-		MorphologicalChangeTypeLoss,
-		MorphologicalChangeTypeAnalogy,
 	}
 
 	// Test that each change type has a valid string representation

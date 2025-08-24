@@ -162,98 +162,6 @@ func (cee *ContactEvolutionEngine) createBorrowingPattern(contactType ContactTyp
 	return pattern
 }
 
-// simulateLexicalBorrowing simulates the borrowing of words from one language to another.
-func (cee *ContactEvolutionEngine) simulateLexicalBorrowing(
-	sourceLang *lang.Language,
-	targetLang *lang.Language,
-	intensity float32,
-	contactType ContactType,
-) []LinguisticChange {
-
-	var changes []LinguisticChange
-
-	// Number of words to borrow based on intensity
-	numWords := int(intensity * 20) // 0-20 words based on intensity
-
-	for i := 0; i < numWords; i++ {
-		if cee.GetRandomFloat32() < 0.7 { // 70% chance per word
-			change := &LinguisticChange{
-				ID:               fmt.Sprintf("lexical_borrowing_%d", time.Now().UnixNano()),
-				Type:             ChangeTypeLexical,
-				Direction:        ChangeDirectionAdditive,
-				Description:      fmt.Sprintf("Borrowed word from %s", sourceLang.Name),
-				Details:          "New vocabulary item adapted from source language",
-				Timestamp:        time.Now(),
-				Era:              "contact_evolution",
-				Trigger:          fmt.Sprintf("contact_%s", contactType.String()),
-				CultureInfluence: sourceLang.Culture,
-				Intensity:        intensity * 0.8,
-			}
-			changes = append(changes, *change)
-		}
-	}
-
-	return changes
-}
-
-// simulatePhonologicalBorrowing simulates the adoption of sound patterns from another language.
-func (cee *ContactEvolutionEngine) simulatePhonologicalBorrowing(
-	sourceLang *lang.Language,
-	targetLang *lang.Language,
-	intensity float32,
-) []LinguisticChange {
-
-	var changes []LinguisticChange
-
-	// Phonological borrowing is more selective
-	if cee.GetRandomFloat32() < intensity {
-		change := &LinguisticChange{
-			ID:               fmt.Sprintf("phonological_borrowing_%d", time.Now().UnixNano()),
-			Type:             ChangeTypeSoundShift,
-			Direction:        ChangeDirectionAdditive,
-			Description:      fmt.Sprintf("Adopted phonological features from %s", sourceLang.Name),
-			Details:          "New sound patterns or phoneme inventory changes",
-			Timestamp:        time.Now(),
-			Era:              "contact_evolution",
-			Trigger:          "phonological_contact",
-			CultureInfluence: sourceLang.Culture,
-			Intensity:        intensity * 0.6,
-		}
-		changes = append(changes, *change)
-	}
-
-	return changes
-}
-
-// simulateGrammaticalBorrowing simulates the adoption of grammatical structures from another language.
-func (cee *ContactEvolutionEngine) simulateGrammaticalBorrowing(
-	sourceLang *lang.Language,
-	targetLang *lang.Language,
-	intensity float32,
-) []LinguisticChange {
-
-	var changes []LinguisticChange
-
-	// Grammatical borrowing is the rarest and most significant
-	if cee.GetRandomFloat32() < intensity*0.5 {
-		change := &LinguisticChange{
-			ID:               fmt.Sprintf("grammatical_borrowing_%d", time.Now().UnixNano()),
-			Type:             ChangeTypeMorphological,
-			Direction:        ChangeDirectionAdditive,
-			Description:      fmt.Sprintf("Adopted grammatical features from %s", sourceLang.Name),
-			Details:          "New grammatical structures or patterns",
-			Timestamp:        time.Now(),
-			Era:              "contact_evolution",
-			Trigger:          "grammatical_contact",
-			CultureInfluence: sourceLang.Culture,
-			Intensity:        intensity * 0.4,
-		}
-		changes = append(changes, *change)
-	}
-
-	return changes
-}
-
 // CalculateContactInfluence calculates how much influence one language has on another.
 func (cee *ContactEvolutionEngine) CalculateContactInfluence(
 	sourceLang *lang.Language,
@@ -277,47 +185,25 @@ func (cee *ContactEvolutionEngine) CalculateContactInfluence(
 	case ContactTypeReligious:
 		baseInfluence = 0.5
 	case ContactTypeEducational:
-		baseInfluence = 0.2
+		baseInfluence = 0.4
 	}
 
 	// Adjust based on duration (longer contact = more influence)
-	durationFactor := float32(duration.Hours() / (24 * 365 * 10)) // 10 years as baseline
+	durationFactor := float32(duration.Hours()) / (24.0 * 365.0 * 100.0) // Normalize to 100 years
 	if durationFactor > 1.0 {
 		durationFactor = 1.0
 	}
 
-	// Adjust based on cultural similarity (placeholder for future implementation)
-	culturalSimilarity := float32(0.5) // Default neutral value
+	// Adjust based on cultural compatibility
+	culturalCompatibility := float32(0.5)                 // Default neutral value for now
+	culturalFactor := 0.5 + (culturalCompatibility * 0.5) // 0.5 to 1.0 range
 
-	return baseInfluence * (0.7 + 0.3*durationFactor) * (0.8 + 0.2*culturalSimilarity)
-}
+	finalInfluence := baseInfluence * durationFactor * culturalFactor
 
-// simulateOrthographicBorrowing simulates the borrowing of writing system features from one language to another.
-func (cee *ContactEvolutionEngine) simulateOrthographicBorrowing(
-	sourceLang *lang.Language,
-	targetLang *lang.Language,
-	intensity float32,
-	contactType ContactType,
-) []LinguisticChange {
-
-	var changes []LinguisticChange
-
-	// Orthographic borrowing is very selective and depends on writing system compatibility
-	if cee.GetRandomFloat32() < intensity*0.3 {
-		change := &LinguisticChange{
-			ID:               fmt.Sprintf("orthographic_borrowing_%d", time.Now().UnixNano()),
-			Type:             ChangeTypeOrthographic,
-			Direction:        ChangeDirectionAdditive,
-			Description:      fmt.Sprintf("Adopted orthographic features from %s", sourceLang.Name),
-			Details:          "New writing system features or conventions",
-			Timestamp:        time.Now(),
-			Era:              "contact_evolution",
-			Trigger:          "orthographic_contact",
-			CultureInfluence: sourceLang.Culture,
-			Intensity:        intensity * 0.4,
-		}
-		changes = append(changes, *change)
+	// Ensure influence stays within reasonable bounds
+	if finalInfluence > 1.0 {
+		finalInfluence = 1.0
 	}
 
-	return changes
+	return finalInfluence
 }

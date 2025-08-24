@@ -16,8 +16,6 @@ const (
 	MorphologicalChangeTypeSimplification                         // Reduction in complexity
 	MorphologicalChangeTypeRegularization                         // Making irregular forms regular
 	MorphologicalChangeTypeInnovation                             // New morphological features
-	MorphologicalChangeTypeLoss                                   // Loss of morphological features
-	MorphologicalChangeTypeAnalogy                                // Change by analogy with other forms
 )
 
 var morphologicalChangeTypeEnum = []string{
@@ -25,13 +23,11 @@ var morphologicalChangeTypeEnum = []string{
 	"simplification",
 	"regularization",
 	"innovation",
-	"loss",
-	"analogy",
 }
 
 // String returns the string representation of the MorphologicalChangeType.
 func (mct MorphologicalChangeType) String() string {
-	if mct > MorphologicalChangeTypeAnalogy {
+	if mct > MorphologicalChangeTypeInnovation {
 		return morphologicalChangeTypeEnum[0]
 	}
 	return morphologicalChangeTypeEnum[mct]

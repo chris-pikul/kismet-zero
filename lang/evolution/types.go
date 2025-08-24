@@ -18,7 +18,6 @@ const (
 	ChangeTypeSoundShift               // Phonological changes (Grimm's Law, etc.)
 	ChangeTypeMorphological            // Changes to word formation and grammar
 	ChangeTypeLexical                  // New words, loanwords, semantic shifts
-	ChangeTypeSyntactic                // Word order, sentence structure changes
 	ChangeTypeOrthographic             // Writing system modifications
 	ChangeTypeContact                  // Influence from other languages
 	ChangeTypeDialectal                // Dialect-specific changes
@@ -29,7 +28,6 @@ var changeTypeEnum = []string{
 	"sound_shift",
 	"morphological",
 	"lexical",
-	"syntactic",
 	"orthographic",
 	"contact",
 	"dialectal",
@@ -37,7 +35,7 @@ var changeTypeEnum = []string{
 
 // String returns the string representation of the ChangeType.
 func (ct ChangeType) String() string {
-	if ct > ChangeTypeContact {
+	if ct > ChangeTypeDialectal {
 		return changeTypeEnum[0]
 	}
 	return changeTypeEnum[ct]
@@ -51,7 +49,6 @@ const (
 	ChangeDirectionAdditive                    // New features added
 	ChangeDirectionSubtractive                 // Features removed
 	ChangeDirectionModifying                   // Existing features changed
-	ChangeDirectionBlending                    // Features merged/combined
 )
 
 var changeDirectionEnum = []string{
@@ -59,12 +56,11 @@ var changeDirectionEnum = []string{
 	"additive",
 	"subtractive",
 	"modifying",
-	"blending",
 }
 
 // String returns the string representation of the ChangeDirection.
 func (cd ChangeDirection) String() string {
-	if cd > ChangeDirectionBlending {
+	if cd > ChangeDirectionModifying {
 		return changeDirectionEnum[0]
 	}
 	return changeDirectionEnum[cd]

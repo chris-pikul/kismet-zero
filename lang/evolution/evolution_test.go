@@ -85,7 +85,8 @@ func TestMorphologicalEvolutionEngine(t *testing.T) {
 	}
 }
 
-func TestContactEvolutionEngine(t *testing.T) {
+// TestEvolutionEngineContactEngine tests the contact engine integration in the evolution engine.
+func TestEvolutionEngineContactEngine(t *testing.T) {
 	config := DefaultEvolutionConfig(42)
 	engine := NewContactEvolutionEngine(config)
 

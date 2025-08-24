@@ -4,6 +4,8 @@ globs:
 alwaysApply: true
 ---
  • Look for an `AGENTS.md` file for package level context. Use grep to absorb all AGENTS.md files.
+ • Create an use a `CONTEXT.md` file for your own purposes which you may update with information about development plans, progress, analysis, or anything else you wish to save for memory/context reasons. It is your file to control.
+ • Kismet is in early development and nothing needs to remain for backwards compatibility or version changing. Do not leave legacy system code around, clean up after refactors.
  • Use lowerCamelCase for struct fields and JSON tags. Do not use snake_case.
  • Constants must be in UPPER_CASE and may use underscores.
  • Avoid global state. Prefer dependency injection via constructor functions.
