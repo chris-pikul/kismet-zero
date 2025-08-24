@@ -17,6 +17,7 @@ const (
 	ChangeTypeSyntactic                // Word order, sentence structure changes
 	ChangeTypeOrthographic             // Writing system modifications
 	ChangeTypeContact                  // Influence from other languages
+	ChangeTypeDialectal                // Dialect-specific changes
 )
 
 var changeTypeEnum = []string{
@@ -27,6 +28,7 @@ var changeTypeEnum = []string{
 	"syntactic",
 	"orthographic",
 	"contact",
+	"dialectal",
 }
 
 // String returns the string representation of the ChangeType.
@@ -156,6 +158,12 @@ type EvolutionConfig struct {
 	CulturalInfluenceWeight float32       `json:"culturalInfluenceWeight"` // Weight of cultural factors
 	EraDuration             time.Duration `json:"eraDuration"`             // Length of an evolution era
 
+	// Dialect formation parameters
+	DialectFormationRate       float32 `json:"dialectFormationRate"`       // Probability of dialect formation per era
+	GeographicIsolationWeight  float32 `json:"geographicIsolationWeight"`  // Weight of geographic factors in dialect formation
+	SocialStratificationWeight float32 `json:"socialStratificationWeight"` // Weight of social factors in dialect formation
+	UrbanRuralDivergenceRate   float32 `json:"urbanRuralDivergenceRate"`   // Rate of urban-rural dialect divergence
+
 	// RNG and reproducibility
 	Seed int64 `json:"seed"`
 }
@@ -163,16 +171,111 @@ type EvolutionConfig struct {
 // DefaultEvolutionConfig returns a configuration with reasonable default values.
 func DefaultEvolutionConfig(seed int64) EvolutionConfig {
 	return EvolutionConfig{
-		NaturalChangeRate:       0.3,
-		SoundShiftProbability:   0.4,
-		MorphologyChangeRate:    0.2,
-		ContactInfluenceRate:    0.25,
-		BorrowingThreshold:      0.3,
-		AdaptationStrength:      0.6,
-		OrthographyChangeRate:   0.15,
-		ScriptReformRate:        0.1,
-		CulturalInfluenceWeight: 0.4,
-		EraDuration:             time.Hour * 24 * 365 * 100, // 100 years
-		Seed:                    seed,
+		NaturalChangeRate:          0.3,
+		SoundShiftProbability:      0.4,
+		MorphologyChangeRate:       0.2,
+		ContactInfluenceRate:       0.25,
+		BorrowingThreshold:         0.3,
+		AdaptationStrength:         0.6,
+		OrthographyChangeRate:      0.15,
+		ScriptReformRate:           0.1,
+		CulturalInfluenceWeight:    0.4,
+		EraDuration:                time.Hour * 24 * 365 * 100, // 100 years
+		DialectFormationRate:       0.15,
+		GeographicIsolationWeight:  0.6,
+		SocialStratificationWeight: 0.4,
+		UrbanRuralDivergenceRate:   0.25,
+		Seed:                       seed,
 	}
+}
+
+// DialectType represents the type of dialect formation.
+type DialectType byte
+
+const (
+	DialectTypeUnknown    DialectType = iota
+	DialectTypeGeographic             // Regional/geographic variation
+	DialectTypeSocial                 // Social class variation
+	DialectTypeUrban                  // Urban vs rural variation
+	DialectTypeTemporal               // Historical/archaic variation
+	DialectTypeContact                // Contact-induced variation
+)
+
+var dialectTypeEnum = []string{
+	"unknown",
+	"geographic",
+	"social",
+	"urban",
+	"temporal",
+	"contact",
+}
+
+// String returns the string representation of the DialectType.
+func (dt DialectType) String() string {
+	if dt > DialectTypeContact {
+		return dialectTypeEnum[0]
+	}
+	return dialectTypeEnum[dt]
+}
+
+// GeographicRegion represents a geographical area where a dialect is spoken.
+type GeographicRegion struct {
+	ID           string  `json:"id"`
+	Name         string  `json:"name"`
+	Latitude     float64 `json:"latitude"`
+	Longitude    float64 `json:"longitude"`
+	Climate      string  `json:"climate,omitempty"` // "tropical", "temperate", "arctic", etc.
+	Terrain      string  `json:"terrain,omitempty"` // "mountain", "coastal", "plains", etc.
+	Population   int     `json:"population,omitempty"`
+	Urbanization float32 `json:"urbanization,omitempty"` // 0.0 to 1.0, rural to urban
+}
+
+// DialectFeatures represents the distinctive features of a dialect.
+type DialectFeatures struct {
+	ID                   string   `json:"id"`
+	PhonologicalFeatures []string `json:"phonologicalFeatures,omitempty"` // Distinctive sound patterns
+	LexicalFeatures      []string `json:"lexicalFeatures,omitempty"`      // Local vocabulary
+	GrammaticalFeatures  []string `json:"grammaticalFeatures,omitempty"`  // Grammar variations
+	PragmaticFeatures    []string `json:"pragmaticFeatures,omitempty"`    // Usage patterns
+	IntelligibilityScore float32  `json:"intelligibilityScore"`           // 0.0 to 1.0, mutual intelligibility with parent
+}
+
+// Dialect represents a regional or social variant of a language.
+type Dialect struct {
+	ID            string           `json:"id"`
+	Name          string           `json:"name"`
+	Type          DialectType      `json:"type"`
+	ParentLang    string           `json:"parentLang"` // ID of parent language
+	Region        GeographicRegion `json:"region"`
+	Features      DialectFeatures  `json:"features"`
+	FormationDate time.Time        `json:"formationDate"`
+	Era           string           `json:"era"`
+
+	// Evolution tracking
+	EvolutionHistory []EvolutionEvent `json:"evolutionHistory,omitempty"`
+	ContactHistory   []ContactEvent   `json:"contactHistory,omitempty"`
+
+	// Metadata
+	Description string `json:"description,omitempty"`
+	Status      string `json:"status"` // "active", "archaic", "extinct"
+	Seed        int64  `json:"seed"`
+}
+
+// DialectFormationEvent represents the creation of a new dialect.
+type DialectFormationEvent struct {
+	ID         string    `json:"id"`
+	Timestamp  time.Time `json:"timestamp"`
+	Era        string    `json:"era"`
+	ParentLang string    `json:"parentLang"`
+	NewDialect string    `json:"newDialect"`
+
+	// Formation factors
+	GeographicFactors []string `json:"geographicFactors,omitempty"`
+	SocialFactors     []string `json:"socialFactors,omitempty"`
+	ContactFactors    []string `json:"contactFactors,omitempty"`
+
+	// Intensity and description
+	Intensity   float32 `json:"intensity"`
+	Description string  `json:"description"`
+	Seed        int64   `json:"seed"`
 }

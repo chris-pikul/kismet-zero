@@ -15,4 +15,7 @@
 //   - Language family tree tracking and relationship modeling
 //   - Reproducible evolution through seeded RNG
 //   - Cultural influence weighting and directionality
+//   - Dialect formation and regional variation modeling
+//   - Geographic and social dialect evolution
+//   - Mutual intelligibility tracking and dialect continua
 package evolution

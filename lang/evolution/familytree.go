@@ -7,18 +7,20 @@ import (
 	"github.com/chris-pikul/kismet-zero/lang"
 )
 
-// LanguageFamilyTree manages the genealogical relationships between languages.
+// LanguageFamilyTree manages the genealogical relationships between languages and dialects.
 type LanguageFamilyTree struct {
-	root   *LanguageNode
-	nodes  map[string]*LanguageNode // LanguageID -> LanguageNode
-	config EvolutionConfig
+	root     *LanguageNode
+	nodes    map[string]*LanguageNode // LanguageID -> LanguageNode
+	dialects map[string]*Dialect      // DialectID -> Dialect
+	config   EvolutionConfig
 }
 
 // NewLanguageFamilyTree creates a new language family tree.
 func NewLanguageFamilyTree(config EvolutionConfig) *LanguageFamilyTree {
 	return &LanguageFamilyTree{
-		nodes:  make(map[string]*LanguageNode),
-		config: config,
+		nodes:    make(map[string]*LanguageNode),
+		dialects: make(map[string]*Dialect),
+		config:   config,
 	}
 }
 
@@ -254,4 +256,87 @@ func (lft *LanguageFamilyTree) printNode(node *LanguageNode, depth int) string {
 	}
 
 	return result
+}
+
+// AddDialect adds a dialect to the family tree.
+func (lft *LanguageFamilyTree) AddDialect(dialect *Dialect, parentLang *lang.Language) error {
+	if dialect == nil {
+		return fmt.Errorf("cannot add nil dialect")
+	}
+
+	if parentLang == nil {
+		return fmt.Errorf("parent language cannot be nil")
+	}
+
+	// Check if parent language exists
+	parentNode, exists := lft.nodes[parentLang.ID.String()]
+	if !exists {
+		return fmt.Errorf("parent language %s not found in family tree", parentLang.ID.String())
+	}
+
+	// Add dialect to the dialects map
+	lft.dialects[dialect.ID] = dialect
+
+	// Add dialect ID to parent language's child list if not already present
+	found := false
+	for _, childID := range parentNode.Language.ChildIDs {
+		if childID.String() == dialect.ID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		// Create a proper LanguageID for the dialect
+		dialectLangID := lang.LanguageID{
+			Family:   parentLang.ID.Family,
+			Branch:   parentLang.ID.Branch,
+			Language: parentLang.ID.Language,
+			Dialect:  dialect.ID,
+		}
+		parentNode.Language.ChildIDs = append(parentNode.Language.ChildIDs, dialectLangID)
+	}
+
+	return nil
+}
+
+// UpdateDialect updates an existing dialect in the family tree.
+func (lft *LanguageFamilyTree) UpdateDialect(dialect *Dialect) error {
+	if dialect == nil {
+		return fmt.Errorf("cannot update nil dialect")
+	}
+
+	if _, exists := lft.dialects[dialect.ID]; !exists {
+		return fmt.Errorf("dialect %s not found in family tree", dialect.ID)
+	}
+
+	lft.dialects[dialect.ID] = dialect
+	return nil
+}
+
+// GetDialect retrieves a dialect by its ID.
+func (lft *LanguageFamilyTree) GetDialect(dialectID string) (*Dialect, bool) {
+	dialect, exists := lft.dialects[dialectID]
+	return dialect, exists
+}
+
+// GetDialectsByParent returns all dialects of a parent language.
+func (lft *LanguageFamilyTree) GetDialectsByParent(parentLangID string) []*Dialect {
+	var dialects []*Dialect
+
+	for _, dialect := range lft.dialects {
+		if dialect.ParentLang == parentLangID {
+			dialects = append(dialects, dialect)
+		}
+	}
+
+	return dialects
+}
+
+// GetAllDialects returns all dialects in the family tree.
+func (lft *LanguageFamilyTree) GetAllDialects() []*Dialect {
+	dialects := make([]*Dialect, 0, len(lft.dialects))
+	for _, dialect := range lft.dialects {
+		dialects = append(dialects, dialect)
+	}
+	return dialects
 }

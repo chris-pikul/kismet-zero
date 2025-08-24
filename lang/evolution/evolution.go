@@ -9,13 +9,14 @@ import (
 )
 
 // EvolutionEngine is the main orchestrator for language evolution.
-// It coordinates sound changes, morphological changes, orthographic changes, contact influence, and cultural influence.
+// It coordinates sound changes, morphological changes, orthographic changes, contact influence, cultural influence, and dialect formation.
 type EvolutionEngine struct {
 	soundChangeEngine       *SoundChangeEngine
 	morphologyEngine        *MorphologicalEvolutionEngine
 	orthographyEngine       *OrthographicEvolutionEngine
 	contactEngine           *ContactEvolutionEngine
 	culturalInfluenceEngine *CulturalInfluenceEngine
+	dialectFormationEngine  *DialectFormationEngine
 	familyTree              *LanguageFamilyTree
 	config                  EvolutionConfig
 	rng                     *rand.Rand
@@ -31,6 +32,7 @@ func NewEvolutionEngine(config EvolutionConfig) *EvolutionEngine {
 		orthographyEngine:       NewOrthographicEvolutionEngine(config),
 		contactEngine:           NewContactEvolutionEngine(config),
 		culturalInfluenceEngine: NewCulturalInfluenceEngine(config),
+		dialectFormationEngine:  NewDialectFormationEngine(config),
 		familyTree:              NewLanguageFamilyTree(config),
 		config:                  config,
 		rng:                     rng,
@@ -396,4 +398,109 @@ func (ee *EvolutionEngine) SimulateCulturalInfluence(
 // GetCulturalInfluenceEngine returns the cultural influence engine for direct access.
 func (ee *EvolutionEngine) GetCulturalInfluenceEngine() *CulturalInfluenceEngine {
 	return ee.culturalInfluenceEngine
+}
+
+// CreateGeographicDialect creates a new geographic dialect from a parent language.
+func (ee *EvolutionEngine) CreateGeographicDialect(
+	parentLang *lang.Language,
+	dialectID string,
+	dialectName string,
+	region GeographicRegion,
+	era string,
+) (*Dialect, DialectFormationEvent, error) {
+
+	if parentLang == nil {
+		return nil, DialectFormationEvent{}, fmt.Errorf("parent language cannot be nil")
+	}
+
+	// Use the dialect formation engine to create the dialect
+	dialect, formationEvent, err := ee.dialectFormationEngine.CreateGeographicDialect(
+		parentLang,
+		dialectID,
+		dialectName,
+		region,
+		era,
+	)
+	if err != nil {
+		return nil, DialectFormationEvent{}, fmt.Errorf("failed to create geographic dialect: %w", err)
+	}
+
+	// Add the dialect to the family tree
+	err = ee.familyTree.AddDialect(dialect, parentLang)
+	if err != nil {
+		return nil, DialectFormationEvent{}, fmt.Errorf("failed to add dialect to family tree: %w", err)
+	}
+
+	return dialect, formationEvent, nil
+}
+
+// CreateSocialDialect creates a new social dialect from a parent language.
+func (ee *EvolutionEngine) CreateSocialDialect(
+	parentLang *lang.Language,
+	dialectID string,
+	dialectName string,
+	socialClass string,
+	urbanization float32,
+	era string,
+) (*Dialect, DialectFormationEvent, error) {
+
+	if parentLang == nil {
+		return nil, DialectFormationEvent{}, fmt.Errorf("parent language cannot be nil")
+	}
+
+	// Use the dialect formation engine to create the dialect
+	dialect, formationEvent, err := ee.dialectFormationEngine.CreateSocialDialect(
+		parentLang,
+		dialectID,
+		dialectName,
+		socialClass,
+		urbanization,
+		era,
+	)
+	if err != nil {
+		return nil, DialectFormationEvent{}, fmt.Errorf("failed to create social dialect: %w", err)
+	}
+
+	// Add the dialect to the family tree
+	err = ee.familyTree.AddDialect(dialect, parentLang)
+	if err != nil {
+		return nil, DialectFormationEvent{}, fmt.Errorf("failed to add dialect to family tree: %w", err)
+	}
+
+	return dialect, formationEvent, nil
+}
+
+// EvolveDialect evolves a dialect over time.
+func (ee *EvolutionEngine) EvolveDialect(
+	dialect *Dialect,
+	era string,
+	duration time.Duration,
+) (*Dialect, EvolutionEvent, error) {
+
+	if dialect == nil {
+		return nil, EvolutionEvent{}, fmt.Errorf("dialect cannot be nil")
+	}
+
+	// Use the dialect formation engine to evolve the dialect
+	evolvedDialect, evolutionEvent, err := ee.dialectFormationEngine.EvolveDialect(
+		dialect,
+		era,
+		duration,
+	)
+	if err != nil {
+		return nil, EvolutionEvent{}, fmt.Errorf("failed to evolve dialect: %w", err)
+	}
+
+	// Update the dialect in the family tree
+	err = ee.familyTree.UpdateDialect(evolvedDialect)
+	if err != nil {
+		return nil, EvolutionEvent{}, fmt.Errorf("failed to update dialect in family tree: %w", err)
+	}
+
+	return evolvedDialect, evolutionEvent, nil
+}
+
+// GetDialectFormationEngine returns the dialect formation engine for direct access.
+func (ee *EvolutionEngine) GetDialectFormationEngine() *DialectFormationEngine {
+	return ee.dialectFormationEngine
 }

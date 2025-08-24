@@ -4,12 +4,7 @@ The `evolution` package provides comprehensive mechanisms for simulating diachro
 
 ## Overview
 
-This package simulates how real languages evolve over time, either naturally within themselves or from other cultures' influence. Real-world examples include:
-
-- **American English** derived from British English with slight evolution in spellings and sounds
-- **Modern Turkish** adopting parts of French and Arabic into their dialect and grammar
-- **Grimm's Law** in Germanic languages (systematic sound shifts)
-- **Romance languages** evolving from Latin through natural changes and contact
+This package simulates how real languages evolve over time, either naturally within themselves or from other cultures' influence.
 
 ## Key Features
 
@@ -39,7 +34,7 @@ This package simulates how real languages evolve over time, either naturally wit
 - **Intensity-based influence** calculation
 - **Cultural context** and duration factors
 
-### 4.5. Cultural Influence Modeling ⭐ **NEW**
+### 4.5. Cultural Influence Modeling
 - **Sophisticated cultural compatibility** calculations
 - **Fantasy-focused contact types**: trade, conquest, migration, religious, magical, ancient
 - **Cultural identity factors**: prestige, innovation, preservation, magical tradition, religious influence
@@ -109,7 +104,6 @@ reform := orthoEngine.GenerateOrthographicReform(
 // Calculate writing system complexity
 complexity := orthoEngine.CalculateOrthographicComplexity(language.Orthography)
 ```
-```
 
 ### Creating Child Languages
 
@@ -158,11 +152,26 @@ config := evolution.EvolutionConfig{
     AdaptationStrength:    0.6,  // How strongly borrowed features adapt
     CulturalInfluenceWeight: 0.4, // Weight of cultural factors
     EraDuration:           time.Hour * 24 * 365 * 100, // 100 years
+    
+    // Dialect formation parameters
+    DialectFormationRate:       0.15, // Probability of dialect formation per era
+    GeographicIsolationWeight:  0.6,  // Weight of geographic factors in dialect formation
+    SocialStratificationWeight: 0.4,  // Weight of social factors in dialect formation
+    UrbanRuralDivergenceRate:   0.25, // Rate of urban-rural dialect divergence
+    
     Seed:                  42,    // RNG seed for reproducibility
 }
 ```
 
 ## Evolution Types
+
+### Dialect Formation
+- **Geographic dialects**: based on climate, terrain, population, and urbanization
+- **Social dialects**: based on social class, education, and urban/rural environment
+- **Feature generation**: automatic creation of distinctive phonological, lexical, and grammatical features
+- **Intelligibility tracking**: mutual intelligibility scores that decrease over time
+- **Formation factors**: automatic calculation of geographic and social influences
+- **Dialect continua**: support for gradual variation between related dialects
 
 ### Natural Evolution
 - **Internal changes** that occur over time
@@ -176,7 +185,7 @@ config := evolution.EvolutionConfig{
 - **Grammatical influence**: syntax and morphology
 - **Cultural adaptation**: how borrowed features integrate
 
-### Cultural Influence Modeling ⭐ **NEW**
+### Cultural Influence Modeling
 - **Sophisticated cultural compatibility** calculations
 - **Fantasy-focused contact types**: trade, conquest, migration, religious, magical, ancient
 - **Cultural identity factors**: prestige, innovation, preservation, magical tradition, religious influence
@@ -190,9 +199,52 @@ config := evolution.EvolutionConfig{
 - **Palatalization**: velar → palatal before front vowels
 - **Custom rules**: user-defined phonological changes
 
+## Dialect Management
+
+The package provides comprehensive dialect formation and management:
+
+```go
+// Geographic regions for dialect formation
+region := evolution.GeographicRegion{
+    ID:          "mountain_valley",
+    Name:        "Mountain Valley",
+    Latitude:    45.0,
+    Longitude:   -120.0,
+    Climate:     "temperate",
+    Terrain:     "mountain",
+    Population:  5000,
+    Urbanization: 0.3,
+}
+
+// Dialect features and characteristics
+dialect := &evolution.Dialect{
+    ID:           "mountain_dialect",
+    Name:         "Mountain Valley Dialect",
+    Type:         evolution.DialectTypeGeographic,
+    ParentLang:   "parent_language_id",
+    Region:       region,
+    Features:     dialectFeatures,
+    FormationDate: time.Now(),
+    Era:          "colonial",
+    Status:       "active",
+}
+
+// Dialect formation events
+formationEvent := evolution.DialectFormationEvent{
+    ID:              "formation_123",
+    Timestamp:       time.Now(),
+    Era:             "colonial",
+    ParentLang:      "parent_language_id",
+    NewDialect:      "mountain_dialect",
+    GeographicFactors: []string{"climate_temperate", "terrain_mountain"},
+    Intensity:      0.7,
+    Description:     "Geographic dialect formed in mountain region",
+}
+```
+
 ## Family Tree Management
 
-The package maintains a complete genealogical tree of languages:
+The package maintains a complete genealogical tree of languages and dialects:
 
 ```go
 familyTree := engine.GetFamilyTree()
@@ -208,6 +260,11 @@ commonAncestor, err := familyTree.GetCommonAncestor("germanic-old_english", "ger
 
 // Print the tree
 fmt.Println(familyTree.PrintFamilyTree())
+
+// Dialect management
+dialects := familyTree.GetDialectsByParent("parent_language_id")
+allDialects := familyTree.GetAllDialects()
+specificDialect, exists := familyTree.GetDialect("dialect_id")
 ```
 
 ## Writing System Family Trees
@@ -325,37 +382,53 @@ branchLang, _, err := engine.CreateChildLanguage(
 finalLang, _, err := engine.EvolveLanguage(branchLang, "modern", time.Hour*24*365*200)
 ```
 
+### Dialect Formation
+
+```go
+// Create a geographic dialect (e.g., Appalachian English)
+appalachianRegion := evolution.GeographicRegion{
+    ID:          "appalachia",
+    Name:        "Appalachian Mountains",
+    Latitude:    35.0,
+    Longitude:   -82.0,
+    Climate:     "temperate",
+    Terrain:     "mountain",
+    Population:  3000,
+    Urbanization: 0.2,
+}
+
+appalachianDialect, _, err := engine.CreateGeographicDialect(
+    parentLang,
+    "appalachian",
+    "Appalachian English",
+    appalachianRegion,
+    "colonial",
+)
+
+// Create a social dialect (e.g., Cockney English)
+cockneyDialect, _, err := engine.CreateSocialDialect(
+    parentLang,
+    "cockney",
+    "Cockney English",
+    "working",
+    0.9, // High urbanization
+    "industrial",
+)
+
+// Evolve dialects over time
+evolvedDialect, _, err := engine.EvolveDialect(
+    appalachianDialect,
+    "modern",
+    time.Hour*24*365*200, // 200 years
+)
+
+// Get all dialects of a parent language
+dialects := engine.GetFamilyTree().GetDialectsByParent(parentLang.ID.String())
+```
+
 ## Performance Considerations
 
 - **RNG seeding** ensures reproducible evolution
 - **Efficient tree traversal** for large language families
 - **Configurable change rates** to balance realism vs. performance
 - **Lazy evaluation** of complex linguistic changes
-
-## Future Enhancements
-
-- **Orthographic evolution** (writing system changes)
-  - Writing system family trees and genealogy
-  - Cultural influence modeling through orthographic borrowing
-  - Advanced script reform simulation
-- **Semantic drift** (meaning changes over time)
-- **Dialect formation** (regional variation)
-- **Sociolinguistic factors** (social class, age, gender)
-- **Machine learning** integration for more realistic patterns
-
-## Contributing
-
-When contributing to the evolution package:
-
-1. **Follow Go best practices** and the project's coding standards
-2. **Add comprehensive tests** for new features
-3. **Document linguistic concepts** with academic references
-4. **Maintain backward compatibility** for existing evolution scenarios
-5. **Consider performance implications** for large-scale simulations
-
-## References
-
-- **Historical Linguistics**: Campbell, L. (2013). Historical Linguistics: An Introduction
-- **Sound Change**: Blevins, J. (2004). Evolutionary Phonology
-- **Language Contact**: Thomason, S. G. (2001). Language Contact: An Introduction
-- **Indo-European**: Fortson, B. W. (2010). Indo-European Language and Culture: An Introduction
