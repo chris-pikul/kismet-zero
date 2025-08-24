@@ -39,6 +39,10 @@ for diachronic change and cross-cultural blending.
   • Diachronic changes (sound shifts, morphological simplifications).
   • Contact-induced change (loanwords, blended phonologies).
   • Divergence and convergence modeling to track family trees of languages.
+  • Dialect formation (geographic isolation, social stratification, urban/rural).
+  • Cultural influence modeling with compatibility calculations.
+  • Writing system evolution and script reforms.
+  • Reproducible evolution through seeded RNG.
 6.	Integration:
   • Languages are first-class entities tied to cultures.
   • Provides downstream generators (names, lore, text fragments).
@@ -46,6 +50,7 @@ for diachronic change and cross-cultural blending.
   • Root Language struct orchestrates all linguistic components.
   • LanguageID system enables hierarchical language classification.
   • Interlingua package provides semantic analysis and generation capabilities for cross-linguistic processing.
+  • Evolution package provides comprehensive language change simulation, including dialect formation for regional and social variation.
   • Future expansions should maintain interlingua integration for consistent semantic representation across generated languages.
 
 ## Package Structure (Suggested)
@@ -76,10 +81,15 @@ grammar/
   • generator.go — Sentence and phrase construction
 
 evolution/
-  • soundchange.go — Systematic sound shifts
-  • morphology.go — Evolution of forms over time
-  • contact.go — Blending, borrowing, and loanwords
-  • familytree.go — Track genealogical relationships between languages
+  • soundchange.go — Systematic sound shifts (Grimm's Law analogues)
+  • morphology.go — Evolution of forms over time (simplification, regularization)
+  • contact.go — Blending, borrowing, and loanwords between languages
+  • familytree.go — Track genealogical relationships between languages and dialects
+  • dialect.go — Dialect formation engine (geographic, social, urban/rural)
+  • cultural_influence.go — Sophisticated cultural compatibility modeling
+  • orthography.go — Writing system evolution and script reforms
+  • types.go — Evolution events, changes, and dialect structures
+  • evolution.go — Main orchestration engine for language evolution
 
 interlingua/
   • types.go — Core interlingua data structures (Document, Entity, Event, TAM, Roles)
